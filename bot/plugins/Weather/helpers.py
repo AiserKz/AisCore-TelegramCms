@@ -2,8 +2,17 @@ from aiogram.types import Message
 from aiogram import Bot
 from . import user_log
 import requests
+import time 
 
-def get_weather(city: str, api: str, units: str = "metric", lang: str = "ru"):
+_weather_cache = {}
+
+def get_weather(city: str, api: str, units: str = "metric", lang: str = "ru", CACHED_TIMEOUT: int = 600 ) -> str:
+    now = time.time()
+    if city in _weather_cache:
+        cached = _weather_cache[city]
+        if now - cached['time'] < CACHED_TIMEOUT:
+            return cached["data"]
+        
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&units={units}&lang={lang}&appid={api}"
     response = requests.get(url)
 
@@ -17,7 +26,7 @@ def get_weather(city: str, api: str, units: str = "metric", lang: str = "ru"):
         pressure = int(resp['main']['pressure'] * 0.75)  # перевод в мм рт. ст.
         clouds = resp['clouds']['all']
 
-        return (
+        data = (
             f"📍 <b>Погода в {city}</b>: {temp}°C\n"
             f"🤔 Ощущается как: <b>{feels_like}°C</b>\n"
             f"🌤 {description.capitalize()}\n"
@@ -26,6 +35,9 @@ def get_weather(city: str, api: str, units: str = "metric", lang: str = "ru"):
             f"🔽 Давление: <b>{pressure} мм рт. ст.</b>\n"
             f"☁️ Облачность: <b>{clouds}%</b>"
         )
+        
+        _weather_cache[city] = {"time": now, "data": data}
+        return data
 
     # если ошибка
     try:

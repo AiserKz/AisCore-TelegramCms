@@ -123,3 +123,9 @@ def set_bot_options(name, data):
     except requests.exceptions.JSONDecodeError:
         # если сервер вернул не JSON, возвращаем текст ответа
         return resp.text
+
+
+def new_plugin_bot(url):
+    resp = requests.post(f"{BOT_CONTROL_URL}/plugins/download", json={"url": url})
+    print(resp.json())
+    # return resp.json()

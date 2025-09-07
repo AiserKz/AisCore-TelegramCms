@@ -6,7 +6,7 @@ from app.models.plugins import Plugin
 from app.models.commands import Command
 from app.models.bot import Bot, BotPlugin
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.routes.bot import reload_bot, get_bot_options, set_bot_options
+from app.routes.bot import reload_bot, get_bot_options, set_bot_options, new_plugin_bot
 from app.crud.upload import download_file, delete_file
 
 
@@ -146,6 +146,7 @@ def delete_command():
 
 @api_bp.route("/commands/<id>/toggle", methods=["PUT"])
 def toggle_command(id):
+    new_plugin_bot("http://localhost:5000/static/uploads/test/testDown.zip")
     cmd = db.session.query(Command).filter_by(id=id).first()
     if cmd:
         cmd.enabled = not cmd.enabled

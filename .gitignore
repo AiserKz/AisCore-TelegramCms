@@ -186,3 +186,4 @@ cython_debug/
 # *.png
 # *.mp3
 *static/
+.vscode

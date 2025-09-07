@@ -1,12 +1,13 @@
-import tempfile
+import tempfile, zipfile, requests, io, aiohttp
 from aiohttp import web
 from aiogram.types import InputMediaPhoto
 from .plugin_loader import reload_bot_plugins
 from .services.helpers import prepare_file
 from importlib import import_module
-import requests
 from .services.config import API_URL
 
+
+PLUGIN_DIR = "bot/plugins"
 
 # ================== HTTP API для админки ==================
 async def handle_reload(request):
@@ -107,11 +108,34 @@ async def handle_set_plugin(request):
         return web.json_response({"error": f"Плагин {plugin_name} не найден"}, status=404)
 
 
+async def handle_dowload(request):
+    data = await request.json()
+    url = data.get("url")
+    print(f"[API] Скачиваем плагин с {url}")
+    if not url:
+        return web.json_response({"status": "error", "message": "url не передан"}, status=400)
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url=url) as resp:
+                if resp.status != 200:
+                    return web.json_response({"status": "error", "message": f"Не удалось скачать архив: {resp.status}"}, status=500)
+                content = await resp.read()
+                
+        with zipfile.ZipFile(io.BytesIO(content)) as zip_ref:
+            zip_ref.extractall(PLUGIN_DIR)
+        
+        return web.json_response({"status": "ok", "message": "Плагин установлен и перезагружен ✅"})
+
+    except zipfile.BadZipFile:
+        return web.json_response({"status": "error", "message": "Файл не является ZIP-архивом"}, status=400)
+    except Exception as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=500)
+
 def bot_init():
     res = requests.post(API_URL + "/init-bot")
     print(res.json())
     return res.json()
-
 
 
 def setup_web_server():
@@ -122,4 +146,5 @@ def setup_web_server():
     app.router.add_post("/broadcast", handler_broadcast)
     app.router.add_get("/plugins/config/{plugin_name}", handle_get_plugin)
     app.router.add_put("/plugins/config/{plugin_name}", handle_set_plugin)
+    app.router.add_post("/plugins/download", handle_dowload)
     return app

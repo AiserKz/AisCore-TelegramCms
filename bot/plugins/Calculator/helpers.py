@@ -1,6 +1,6 @@
-from aiogram import types
 import ast
 import operator as op
+from aiogram import types
 
 operators = {
     ast.Add: op.add,
@@ -13,12 +13,14 @@ operators = {
 }
 
 def safe_eval(expr: str):
+    expr = expr.replace("^", "**")  # поддержка ^ как степени
+
     def _eval(node):
-        if isinstance(node, ast.Constant):
+        if isinstance(node, ast.Constant):   # числа
             return node.n
-        elif isinstance(node, ast.BinOp):
+        elif isinstance(node, ast.BinOp):   # бинарные операции
             return operators[type(node.op)](_eval(node.left), _eval(node.right))
-        elif isinstance(node, ast.UnaryOp):
+        elif isinstance(node, ast.UnaryOp): # унарные операции (-5 и т.п.)
             return operators[type(node.op)](_eval(node.operand))
         else:
             raise TypeError(node)
@@ -28,14 +30,21 @@ def safe_eval(expr: str):
 
 def calculate_expression(message: types.Message, cmd: dict) -> str:
     command = cmd.get("name", "").strip()
-    
-    expr = message.text.replace(command, "").strip()
-    
+
+    # Отрезаем только выражение
+    parts = message.text.split(maxsplit=1)
+    expr = parts[1] if len(parts) > 1 else ""
+
     if not expr:
-        return f"Введите выражение для вычисления, например: /{command} 2+2*2"
+        return f"Введите выражение для вычисления, например: {command} (2+3)*2"
 
     try:
         result = safe_eval(expr)
-        return f"Результат вычисления: {result}"
+        return (
+            f"✅ Результат: <code><b>{result}</b></code>"
+        )
     except Exception as e:
-        return f"Введите выражение для вычисления правильно, например: {command} 2+2*2 и т.д "
+        return (
+            f"⚠️ Ошибка: {str(e)}\n"
+            f"Пример использования: {command} (2+3)*2"
+        )

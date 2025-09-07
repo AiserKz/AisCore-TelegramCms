@@ -1,6 +1,4 @@
-import importlib
-import sys
-import aiohttp
+import importlib, sys, aiohttp
 from aiogram import Dispatcher, types, Router
 from .services.config import API_URL
 from .services.user_log import log_admin_info
@@ -117,7 +115,7 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
         
 # ================== Перезагрузка всего ==================
 async def reload_bot_plugins(dp: Dispatcher, name=None):
-    """Перезагружаем плагины и динамические команды"""
+    """Перезагружаем плагины и динамические командыф"""
     print("[BOT] Перезагрузка плагинов и динамических команд... 🔄")
     await load_dynamic_commands(name)
     await load_bot_plugins(dp, reload=True, name=name)

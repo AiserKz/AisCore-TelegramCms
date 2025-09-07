@@ -1,19 +1,27 @@
 import json
 import os
 from aiogram import Router, types
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from importlib import import_module
 import inspect
+import time
 
 PLUGIN_DIR = os.path.dirname(__file__)
 OPTIONS_PATH = os.path.join(PLUGIN_DIR, "config")
 CONFIG_PATH = os.path.join(OPTIONS_PATH, "config.json")
 SCHEMA_PATH = os.path.join(OPTIONS_PATH, "schema.json")
 
+_last_used = {}
+_config_cache = None
 
 # ================= Конфиг =================
+
+async def user_log(text: str, users: types.User = None):
+    from ...services.user_log import log_admin_info
+    await log_admin_info(text, users)
+
 def deep_update(original: dict, updates: dict) -> dict:
-    """Рекурсивно обновляет original значениями из updates"""
     for key, value in updates.items():
         if isinstance(value, dict) and isinstance(original.get(key), dict):
             original[key] = deep_update(original.get(key, {}), value)
@@ -21,24 +29,20 @@ def deep_update(original: dict, updates: dict) -> dict:
             original[key] = value
     return original
 
-
 def get_config():
-    if os.path.exists(CONFIG_PATH):
+    global _config_cache
+    if _config_cache is None and os.path.exists(CONFIG_PATH):
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {"cooldown": 0, "commands": [], "is_allMessages": False}
-
+            _config_cache = json.load(f)
+    return _config_cache or {"cooldown": 0, "commands": []}
 
 def set_config(new_config):
-    if os.path.exists(CONFIG_PATH):
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            current = json.load(f)
-    else:
-        current = {}
+    global _config_cache
+    current = get_config()
     updated = deep_update(current, new_config)
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(updated, f, ensure_ascii=False, indent=2)
-
+    _config_cache = updated
 
 def get_schema():
     if os.path.exists(SCHEMA_PATH):
@@ -47,10 +51,8 @@ def get_schema():
             return schema.get("fields", [])
     return []
 
-
 def get_data():
     return {"config": get_config(), "fields": get_schema()}
-
 
 def set_data(data):
     options = data.get("config", {})
@@ -58,15 +60,10 @@ def set_data(data):
         set_config(options)
     return "ok"
 
-
 # ================== Router Builder ==================
 def build_router() -> Router:
-    """
-    Возвращает Router для подключения в plugin_loader.
-    Не трогает dp напрямую!
-    """
-    config = get_config()
     router = Router(name="calculator")
+    config = get_config()
     comand_names = [cmd['name'].lstrip('/') for cmd in config.get("commands", [])]
 
     @router.message(Command(commands=comand_names)) 
@@ -78,15 +75,24 @@ def build_router() -> Router:
             if text.startswith(cmd["name"]):
                 await execute_command(cmd, message)
                 return
-
-
     return router
 
 
 # ================== Движок команд ==================
 async def execute_command(cmd: dict, message: types.Message):
+    config = get_config()
+    
+    cooldown = cmd.get("cooldown", config.get("cooldown", 0))
+    key = f"{message.from_user.id}:{cmd['name']}"
+    now = time.time()
+    
+    if cooldown and key in _last_used and now - _last_used[key] < cooldown:
+        await message.answer("⏳ Подождите перед следующим использованием этой команды")
+        return
+    
+    _last_used[key] = now
+    
     action = cmd.get("action")
-
     if action == "text":
         await message.answer(cmd.get("response", ""))
 
@@ -109,8 +115,8 @@ async def execute_command(cmd: dict, message: types.Message):
                     result = func(message, cmd)
 
                 if result:
-                    await message.answer(str(result))
+                    await message.answer(str(result), parse_mode=ParseMode.HTML)
             else:
-                await message.answer(f"⚠️ {func_name} не является функцией")
+                await user_log(f"⚠️ {func_name} не является функцией", message.from_user)
         except Exception as e:
-            await message.answer(f"⚠️ Ошибка при выполнении команды: {e}")
+            await user_log(f"Ошибка в плагине {__name__}: {e}", message.from_user)
