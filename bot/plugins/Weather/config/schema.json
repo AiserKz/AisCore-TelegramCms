@@ -1,0 +1,8 @@
+{
+    "fields": [
+        {"name": "api_key", "title": "Ключ API", "type": "string", "default": "" },
+        {"name": "city", "title": "Город по умолчанию", "type": "string", "default": "Almaty" },
+        {"name": "units", "title": "Единицы измерения", "type": "string", "default": "metric", "description": "metric, imperial, standard" },
+        {"name": "lang", "title": "Язык", "type": "string", "default": "ru", "description": "en, ru, etc." },
+        {"name": "commands", "title": "Команды", "type": "list", "item_type": "object", "default": [{"name": "/weather", "response": "Погода в вашем городе"}], "description": "Список команд плагина"}   ]
+}

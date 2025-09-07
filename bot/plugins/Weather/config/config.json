@@ -1,0 +1,14 @@
+{
+  "commands": [
+    {
+      "action": "void",
+      "method": "helpers.get_weather",
+      "name": "/weather",
+      "response": "Погода в вашем городе"
+    }
+  ],
+  "api_key": "82d0eca165479960a2c40ffcf0198c84",
+  "city": "Almaty",
+  "units": "metric",
+  "lang": "ru"
+}

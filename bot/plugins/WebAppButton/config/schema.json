@@ -1,0 +1,8 @@
+{
+    "fields": [
+        {"name": "cooldown", "title": "Задержка", "type": "int", "default": 0, "description": "Задержка между ответами (сек)"},
+        {"name": "commands", "title": "Команды", "type": "list", "item_type": "object", "default": [{"name": "/app", "response": "Открыть веб-приложение", "response_text": "Нажмите кнопку ниже, чтобы открыть веб-приложение.", "url": "https://aisblack.ru"}], "description": "Список команд плагина"},
+        {"name": "url", "title": "URL", "type": "string", "default": "https://aisblack.ru", "description": "URL веб-приложения"},
+        {"name": "title", "title": "Название", "type": "string", "default": "AisBlack", "description": "Название веб-приложения (устанавливается не сразу требуется определенное время)"}
+      ]
+}

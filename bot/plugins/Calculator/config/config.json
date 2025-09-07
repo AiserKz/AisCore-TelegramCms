@@ -1,0 +1,10 @@
+{
+  "commands": [
+    {
+      "action": "void",
+      "method": "helpers.calculate_expression",
+      "name": "/c",
+      "response": "Вычисляет выражение. Пример: /calc 2+2*2"
+    }
+  ]
+}

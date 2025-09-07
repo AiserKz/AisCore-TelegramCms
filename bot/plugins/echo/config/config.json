@@ -1,0 +1,11 @@
+{
+  "commands": [
+    {
+      "action": "text",
+      "name": "/echo",
+      "response": "Работает😁 Ура!2"
+    }
+  ],
+  "cooldown": 2,
+  "is_allMessages": true
+}

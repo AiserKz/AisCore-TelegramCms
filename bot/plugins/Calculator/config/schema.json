@@ -1,0 +1,5 @@
+{
+    "fields": [
+        {"name": "commands", "title": "Команды", "type": "list", "item_type": "object", "default": [{"name": "/calc", "response": "Вычисляет выражение. Пример: /calc 2+2*2"}], "description": "Список команд плагина"}
+  ]
+}

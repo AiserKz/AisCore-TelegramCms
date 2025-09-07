@@ -1,0 +1,116 @@
+
+import { HomeIcon, PuzzlePieceIcon, UsersIcon, Cog6ToothIcon, ChevronDoubleLeftIcon, PaperAirplaneIcon, ArrowLeftEndOnRectangleIcon, CommandLineIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAppContext } from "../layout/AppLayout";
+import { SaveBtn } from "./saveBtn";
+
+const navItems = [
+    { name: "Главная", icon: HomeIcon, href: "/" },
+    { name: "Команды", icon: CommandLineIcon, href: "/commands" },
+    { name: "Плагины", icon: PuzzlePieceIcon, href: "/plagins" },
+    { name: "Пользователи", icon: UsersIcon, href: "/users" },
+    { name: "Рассылки", icon: PaperAirplaneIcon, href: "/send" },
+    { name: "Настройки", icon: Cog6ToothIcon, href: "/settings" }
+];
+
+const logoutItem = { name: "Выйти", icon: ArrowLeftEndOnRectangleIcon, href: "#" };
+
+const checkPage = () => {
+    const index = navItems.findIndex((item) => item.href === location.pathname);
+    return index >= 0 ? index : 0;
+}
+
+
+export default function LeftBar() {
+    const [opened, setOpened] = useState(localStorage.getItem("opened") === "true" ? true : false);
+    const location = useLocation();
+    const [currentPage, setCurrentPage] = useState(checkPage());
+    
+    const context = useAppContext();
+    const { user, logout, botRebut } = context;
+
+    useEffect(() => {
+        setCurrentPage(checkPage());
+    }, [location]);
+
+    return (
+        <div
+            className={`fixed top-0 left-0 h-screen bg-base-100 shadow flex flex-col justify-between z-20 transition-[width] duration-500 ease-out ${
+                opened ? "w-56" : "w-20"
+            }`}
+        >
+            {/* Кнопка переключения режима */}
+            <button
+                className="absolute -right-5 top-4 bg-base-100 border border-base-100 rounded-md shadow p-1 flex items-center justify-center transition-all duration-300 hover:bg-base-200"
+                onClick={() => {
+                    setOpened(!opened);
+                    localStorage.setItem("opened", String(!opened));
+                }}
+                aria-label={opened ? "Свернуть" : "Развернуть"}
+            >
+                
+                <ChevronDoubleLeftIcon className={`h-6 w-6 text-base-content transition-transform duration-600 ${ opened ? "rotate-180" : ""}` }/>
+              
+            </button>
+
+            <div className="flex flex-col gap-4 p-4 pt-12">
+                <div className="flex items-center gap-2 mb-6 ml-2">
+                    <PuzzlePieceIcon className="h-8 w-8 text-primary shrink-0" />
+                    <span
+                        className={`font-bold text-lg ml-10 text-base-content absolute text-nowrap transition-opacity duration-300 ease-out ${
+                            opened ? "opacity-100" : "opacity-0"
+                        }`}
+                        style={{ pointerEvents: opened ? "auto" : "none" }}
+                    >
+                        Ais|Bot Manager
+                    </span>
+                </div>
+                <nav className="flex flex-col gap-2 relative">
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.name}
+                            to={item.href}
+                            className={`flex items-center rounded-md px-2 py-2 hover:bg-primary/50 transition-all ${
+                                opened ? "justify-start" : "justify-start"
+                            } ${ currentPage === navItems.indexOf(item) ? "bg-primary/50" : "" }`}
+                        >
+                            <item.icon className="h-7 w-7 text-base-content shrink-0" />
+                            <span
+                                className={`text-md font-medium text-base-content ml-10 duration-300 absolute transition-opacity ease-out ${
+                                    opened ? "opacity-100" : "opacity-0 "
+                                }`}
+                                style={{ pointerEvents: opened ? "auto" : "none" }}
+                            >
+                                {item.name}
+                            </span>
+                        </Link>
+                    ))}
+                </nav>
+                {botRebut && <SaveBtn absolute={false}  opened={opened}/>}
+                
+            </div>
+            <div className="border-t border-base-200 p-4 ">
+                <div className="text-base-content flex-row flex items-center gap-3">
+                    <p className="text-sm text-base-content/60">ID: {user?.id}</p>
+                    <p className="text-lg">{user?.username}</p>
+                    
+                </div>
+                <button
+                    onClick={logout}
+                    className={`flex items-center rounded-md px-2 py-2 hover:bg-base-200 transition-colors text-red-400 justify-start`}
+                >
+                    <logoutItem.icon className="h-6 w-6 shrink-0" />
+                    <span
+                        className={`text-sm font-medium ml-10 absolute transition-opacity duration-500 ${
+                            opened ? "opacity-100" : "opacity-0"
+                        }`}
+                        style={{ pointerEvents: opened ? "auto" : "none" }}
+                    >
+                        {logoutItem.name}
+                    </span>
+                </button>
+            </div>
+        </div>
+    );
+}

@@ -179,3 +179,10 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# *.docx
+# *.mp4
+# *.jpg
+# *.png
+# *.mp3
+*static/

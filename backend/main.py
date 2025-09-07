@@ -1,0 +1,34 @@
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+from flask_jwt_extended import (
+    JWTManager
+)
+from app.core.database import db, init_DB
+from app.core.config import JWT_SECRET_KEY, init
+from app.routes import api, bot, auth
+
+app = Flask(__name__)
+CORS(app)
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///db.sqlite3"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
+db.init_app(app)
+jwt = JWTManager(app)
+
+app.register_blueprint(auth.auth_bp)
+app.register_blueprint(bot.bot_bp)
+app.register_blueprint(api.api_bp)
+
+@app.route('/')
+def hello():
+    return jsonify({'message': 'Бэк работает!'}), 200
+
+
+if __name__ == '__main__':
+    init()
+    with app.app_context():
+        db.create_all()
+        init_DB()
+    app.run(debug=True, port=5000)

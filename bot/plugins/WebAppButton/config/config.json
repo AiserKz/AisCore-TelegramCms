@@ -1,0 +1,13 @@
+{
+  "commands": [
+    {
+      "action": "void",
+      "method": "helpers.set_webapp_menu_button",
+      "name": "/app",
+      "response": "Открыть веб-приложение"
+    }
+  ],
+  "cooldown": 2,
+  "url": "https://aisblack.ru/music",
+  "title": "Music"
+}
