@@ -1,7 +1,0 @@
-{
-    "fields": [
-        {"name": "cooldown", "title": "Задержка", "type": "int", "default": 0, "description": "Задержка между ответами (сек)"},
-        {"name": "commands", "title": "Команды", "type": "list", "item_type": "object", "default": [{"name": "/echo", "response": "Echo!"}], "description": "Список команд плагина"},
-        {"name": "is_allMessages", "title": "Применять ко всем сообщениям", "type": "bool", "default": true, "description": "Отвечать на все сообщения, а не только на команды"}
-    ]
-}

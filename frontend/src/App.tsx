@@ -8,6 +8,7 @@ import Users from "./pages/users";
 import Plagins from "./pages/plagins";
 import Sender from "./pages/broadcast";
 import Settings from "./pages/settings";
+import Test from "./pages/Test";
 
 
 
@@ -30,6 +31,7 @@ function App() {
           <Route path="/plagins" element={<Plagins />} />
           <Route path="/send" element={<Sender />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/test" element={<Test />} />
         </Routes>
       </div>
     </Router>

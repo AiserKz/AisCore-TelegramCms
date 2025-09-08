@@ -3,10 +3,12 @@ from app.core.database import db
 from app.models.user import User, TelegramUser
 from app.models.media import Media
 from app.models.plugins import Plugin
+from app.models.bot import BotPlugin, Bot
 from app.models.commands import Command
 from app.models.bot import Bot, BotPlugin
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.routes.bot import reload_bot, get_bot_options, set_bot_options, new_plugin_bot
+from app.crud.plugins import new_plugin
 from app.crud.upload import download_file, delete_file
 
 
@@ -42,6 +44,16 @@ def reload(botname: str):
 def get_plugins():
     plugins = db.session.query(Plugin).all()
     return [plugin.to_dict() for plugin in plugins], 200
+
+@api_bp.route("/plugins/<plugin_name>", methods=["DELETE"])
+def delete_plugin(plugin_name: str):
+    plugin = db.session.query(Plugin).filter(Plugin.name == plugin_name).first()
+    if not plugin:
+        return jsonify({"error": "Плагин не найден"}), 404
+
+    db.session.delete(plugin)
+    db.session.commit()
+    return jsonify({"status": "ok"}), 200
 
 @api_bp.route("/plugins/<botname>/<int:id>/toggle", methods=["PUT"])
 def toggle_plugin(botname: str, id: int):
@@ -82,7 +94,7 @@ def add_plugin(botname: str):
     bot = Bot.query.filter_by(name=botname).first()
     if not bot:
         return jsonify({"error": "Бот не найден"}), 404
-    print(data)
+
     plugin = Plugin.query.filter_by(name=data['name']).first()
     if not plugin:
         return jsonify({"error": "Плагин не найден"}), 404
@@ -90,14 +102,15 @@ def add_plugin(botname: str):
     bp = BotPlugin.query.filter_by(bot_id=bot.id, plugin_id=plugin.id).first()
     if bp:
         return jsonify({"error": "Плагин уже добавлен"}), 400
-
-    bp = BotPlugin(bot_id=bot.id, plugin_id=plugin.id, enabled=True)
+    print(plugin.url)
+    new_plugin_bot(plugin.url)
+    bp = BotPlugin(bot_id=bot.id, plugin_id=plugin.id, enabled=False)
     db.session.add(bp)
     db.session.commit()
     return jsonify({
         "status": "enabled",
         "plugin": plugin.name,
-        "enabled": True
+        "enabled": False
     })
 
 @api_bp.route("/plugins/<botname>/<plugin_id>/options", methods=["GET"])
@@ -118,6 +131,25 @@ def update_plugin_options(botname: str, plugin_id: int):
     data = request.get_json()
     print(data)
     return set_bot_options(name, data)
+
+@api_bp.route("/plugins/<botname>/<plugin_name>", methods=["DELETE"])
+def uninstall_plugin_bot(botname: str, plugin_name: str):
+    bot = db.session.query(Bot).filter(Bot.name == botname).first()
+    for bp in bot.bot_plugins:
+        if bp.plugin.name == plugin_name:
+            db.session.delete(bp)
+            db.session.commit()
+
+    return jsonify({"message": "Плагин успешно удален"}), 200
+
+@api_bp.route("/plugins/install", methods=["POST"])
+def install_plugin():
+    data = request.get_json()
+    if not data['name'] or not data['url']:
+        return jsonify({"error": "Название плагина не указано и/или URL"}), 400
+    
+    return new_plugin(data)
+
 
 @api_bp.route("/commands", methods=["GET"])
 def get_commands():
@@ -146,7 +178,6 @@ def delete_command():
 
 @api_bp.route("/commands/<id>/toggle", methods=["PUT"])
 def toggle_command(id):
-    new_plugin_bot("http://localhost:5000/static/uploads/test/testDown.zip")
     cmd = db.session.query(Command).filter_by(id=id).first()
     if cmd:
         cmd.enabled = not cmd.enabled

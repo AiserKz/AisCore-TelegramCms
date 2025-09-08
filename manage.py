@@ -142,6 +142,12 @@ TEMPLATE_CONFIG = {
             "name": "/{plugin_name}",
             "action": "text",
             "response": "Плагин {plugin_name} работает!"
+        },
+        {
+            "name": "/method",
+            "action": "void",
+            "method": "helpers.sample_method",
+            "response": "Плагин method работает!"
         }
     ]
 }
@@ -150,6 +156,16 @@ TEMPLATE_SCHEMA = {
     "fields": [
         {"name": "cooldown", "type": "number", "label": "Задержка между вызовами"},
         {"name": "commands", "type": "list", "label": "Команды"}
+    ]
+}
+
+PLUGIN_CONFIG = {
+    "name": "{plugin_name}",
+    "version": "1.0.0",
+    "description": "Описание плагина",
+    "author": "Unkown",
+    "dependencies": [
+        
     ]
 }
 
@@ -175,6 +191,12 @@ def create_plugin(plugin_name: str):
     # schema.json
     with open(os.path.join(config_path, "schema.json"), "w", encoding="utf-8") as f:
         json.dump(TEMPLATE_SCHEMA, f, ensure_ascii=False, indent=2)
+        
+
+    plugin = json.loads(json.dumps(PLUGIN_CONFIG).replace("{plugin_name}", plugin_name))
+    # plugin.json
+    with open(os.path.join(path, "plugin.json"), "w", encoding="utf-8") as f:
+        json.dump(plugin, f, ensure_ascii=False, indent=2)
 
     print(f"✅ Плагин {plugin_name} создан в {path}")
 

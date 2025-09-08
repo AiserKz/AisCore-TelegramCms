@@ -36,7 +36,7 @@ export default function LeftBar() {
 
     return (
         <div
-            className={`fixed top-0 left-0 h-screen bg-base-100 shadow flex flex-col justify-between z-20 transition-[width] duration-500 ease-out ${
+            className={`fixed top-0 left-0 h-screen bg-base-100 shadow flex flex-col justify-between z-20 transition-[width] duration-500 ease-out  ${
                 opened ? "w-56" : "w-20"
             }`}
         >

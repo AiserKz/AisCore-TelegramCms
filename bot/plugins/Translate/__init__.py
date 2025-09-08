@@ -3,7 +3,6 @@ from aiogram import Router, types
 from aiogram.filters import Command
 from importlib import import_module
 
-
 PLUGIN_DIR = os.path.dirname(__file__)
 OPTIONS_PATH = os.path.join(PLUGIN_DIR, "config")
 CONFIG_PATH = os.path.join(OPTIONS_PATH, "config.json")
@@ -21,7 +20,7 @@ async def user_log(text: str, users: types.User = None):
 def deep_update(original: dict, updates: dict) -> dict:
     for key, value in updates.items():
         if isinstance(value, dict) and isinstance(original.get(key), dict):
-            original[key] = deep_update(original.get(key, {}), value)
+            original[key] = deep_update(original.get(key, {}),  value)
         else:
             original[key] = value
     return original
@@ -57,24 +56,21 @@ def set_data(data):
         set_config(options)
     return "ok"
 
-
 # ================== Router Builder ==================
 def build_router() -> Router:
-    router = Router(name="WebApp")
+    router = Router(name="Translate") 
     config = get_config()
     comand_names = [cmd['name'].lstrip('/') for cmd in config.get("commands", [])]
 
     @router.message(Command(commands=comand_names)) 
-    async def webapp_handler(message: types.Message):
+    async def default_handler(message: types.Message):
         text = message.text.strip()
         commands = config.get("commands", [])
-        # проверяем команды из конфига
         for cmd in commands:
-            if text.split()[0] == cmd["name"]:
+            if text.split()[0] == cmd["name"]:  # строгое совпадение
                 await execute_command(cmd, message)
                 return
     return router
-
 
 # ================== Движок команд ==================
 async def execute_command(cmd: dict, message: types.Message):
@@ -99,24 +95,28 @@ async def execute_command(cmd: dict, message: types.Message):
         if not method_path:
             await message.answer("⚠️ Метод не указан в конфиге")
             return
+
         try:
             module_name, func_name = method_path.split(".", 1)
             module = import_module(f".{module_name}", package=__name__)
             func = getattr(module, func_name)
-            url = config.get("url")
-            title = config.get("title")
+
             if callable(func):
+                # Вызов функций с конфига
                 if inspect.iscoroutinefunction(func):
-                    result = await func(message.bot, url, title)
+                    result = await func(message, cmd)
                 else:
-                    result = func(message.bot, url, title)
+                    result = func(message, cmd)
                 
                 if result:
-                    if isinstance(result, types.ReplyKeyboardMarkup):
+                    if isinstance(result, types.InlineKeyboardMarkup):
                         await message.answer("Нажмите на кнопку", reply_markup=result)
                     else:
-                        await message.answer(result, reply_markup=types.ReplyKeyboardRemove())
+                        await message.answer(str(result))
+
             else:
                 await user_log(f"⚠️ {func_name} не является функцией", message.from_user)
         except Exception as e:
             await user_log(f"Ошибка в плагине {__name__}: {e}", message.from_user)
+            print(f"[PLUGIN ERROR {__name__}] {e}")
+

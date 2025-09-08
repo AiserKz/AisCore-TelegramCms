@@ -156,7 +156,7 @@ export default function Commands() {
         setEditingCommand({ ...editingCommand, buttons });
     };
 
-    // Простой рендер markdown -> HTML (без внешних либ, минимально)
+    // Простой рендер markdown -> HTML
     const renderMarkdown = (md: string) => {
         if (!md) return "";
         let html = md
@@ -176,7 +176,7 @@ export default function Commands() {
     const escapeHtml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const escapeAttr = (s: string) => s.replace(/"/g, "&quot;");
 
-    // При сохранении команд добавляем buttons в payload (backend может игнорировать)
+    // При сохранении команд добавляем buttons в payload 
     const saveEdit = async () => {
         if (!editingCommand) return;
         if (editingCommand.name.trim() === "" || editingCommand.description.trim() === "" || editingCommand.response_text.trim() === "") {
@@ -185,7 +185,7 @@ export default function Commands() {
         }
         setIsSavingEdit(true);
         try {
-            // отправляем editingCommand целиком (включая buttons)
+            // отправляем editingCommand целико
             const res = await api.put(`/api/commands/${editingCommand.id}`, editingCommand);
             if (res.status === 200 || res.status === 204) {
                 setData(prev => prev && { ...prev, commands: prev.commands.map(c => c.id === editingCommand.id ? { ...c, ...editingCommand } : c)});
@@ -318,7 +318,7 @@ export default function Commands() {
                
             </div>
 
-            {/* Модальное окно редактирования (увеличенная форма) */}
+            {/* Модальное окно редактирования */}
             {editingCommand && (
                 <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 bg-black/40 p-4">
                     <div className="bg-base-100 w-full max-w-4xl p-6 rounded shadow-lg">
@@ -379,7 +379,6 @@ export default function Commands() {
                                 <div className="p-3 border rounded bg-base-200">
                                     <div
                                         className="text-sm mb-4"
-                                        // eslint-disable-next-line react/no-danger
                                         dangerouslySetInnerHTML={{ __html: renderMarkdown(editingCommand.response_text || "") }}
                                     />
                                     {/* Telegram-подобные inline-кнопки */}

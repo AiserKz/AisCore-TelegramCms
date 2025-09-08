@@ -10,6 +10,8 @@ class Plugin(db.Model):
     author = db.Column(db.String(80), nullable=True)
     license = db.Column(db.String(20), nullable=True)
     url = db.Column(db.String(255), nullable=True)
+    poster = db.Column(db.String(255), nullable=True, default=None)
+    price = db.Column(db.Float, nullable=True, default=None)
     
     plugin_bots = db.relationship("BotPlugin", back_populates="plugin")
     
@@ -23,4 +25,6 @@ class Plugin(db.Model):
             "author": self.author,
             "license": self.license,
             "url": self.url,
+            "poster": self.poster,
+            "price": self.price
         }

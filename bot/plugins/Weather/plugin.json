@@ -1,0 +1,9 @@
+{
+    "name": "Weather",
+    "version": "1.0.2",
+    "description": "Плагин для получения информации о погоде.",
+    "author": "Aiser",
+    "dependencies": [
+        "requests>=2.32.5"
+    ]
+}

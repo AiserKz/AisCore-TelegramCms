@@ -1,0 +1,9 @@
+{
+    "name": "Calculator",
+    "version": "1.0.2",
+    "description": "Плагин для выполнения математических операций.",
+    "author": "Comunity",
+    "dependencies": [
+
+    ]
+}

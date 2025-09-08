@@ -20,6 +20,6 @@ async def log_admin_info(text: str, users: types.User = None):
     from ..main import admin_ids, bot, admin_debug
     if admin_ids and admin_debug:
         if users:
-            text = f"{text}\n\n{users.first_name} {users.last_name or ''} {users.username or ''} время: {datetime.datetime.now()}"
+            text = f"{text}\n\n{users.first_name or ''} {users.last_name or ''} {users.username or ''} время: {datetime.datetime.now()}"
         for admin in admin_ids:
             await bot.send_message(admin, text)

@@ -1,8 +1,4 @@
-from aiogram.types import Message
-from aiogram import Bot
-from . import user_log
-import requests
-import time 
+import requests, time
 
 _weather_cache = {}
 

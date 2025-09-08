@@ -23,6 +23,8 @@ export interface PluginType {
     author: string;
     license: string;
     url: string;
+    poster?: string;
+    price?: number;
 }
 
 export interface CommandType {

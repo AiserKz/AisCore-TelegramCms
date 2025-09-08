@@ -1,10 +1,6 @@
-import json
-import os
+import json, os, time, inspect
 from aiogram import Router, types
-from aiogram.filters import Command
 from importlib import import_module
-import inspect
-import time
 from .helpers import format_response
 
 PLUGIN_DIR = os.path.dirname(__file__)

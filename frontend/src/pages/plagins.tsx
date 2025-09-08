@@ -1,9 +1,11 @@
-import { PowerIcon, Cog6ToothIcon, StopIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PowerIcon, Cog6ToothIcon, StopIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { useAppContext } from "../layout/AppLayout";
 import api from "../script/apiFetch";
 import SkeletonTable from "../components/skeletonTable";
 import { SaveBtn } from "../components/saveBtn";
 import { useState } from "react";
+import PlagineStore from "../components/plagins/plaginShop";
+import type { BotPlugin, PluginType } from "../interface/types";
 
 export default function Plagins() {
 	const context = useAppContext();
@@ -16,24 +18,25 @@ export default function Plagins() {
 	const [optionsSaving, setOptionsSaving] = useState(false);
 	const [installing, setInstalling] = useState<string | null>(null);
 
+	const [showShop, setshowShop] = useState<boolean>(false);
+
     
     const getInstalledPlugins = () => {
-		// ...existing code...
-		// simplified: take each bot plugin (bp) and use bp.plugin for meta
 		if (!data) return [];
 		const botPlugins = data.bot?.plugins || [];
 		return botPlugins.map((bp: any) => ({
-			// meta from nested object
+	
 			plugin_id: bp.plugin_id,
 			bot_id: bp.bot_id,
 			enabled: bp.enabled,
 			config: bp.config ?? {},
-			// metadata from nested plugin object (may be undefined)
+
 			name: bp.plugin?.name ?? bp.plugin_name ?? `plugin-${bp.plugin_id}`,
 			description: bp.plugin?.description ?? "",
 			version: bp.plugin?.version ?? "",
 			author: bp.plugin?.author ?? "",
-			id: bp.plugin?.id ?? bp.plugin_id
+			id: bp.plugin?.id ?? bp.plugin_id,
+			poster: bp.plugin?.poster ?? "",
 		}));
 	};
 
@@ -292,42 +295,88 @@ export default function Plagins() {
     const storeList = defs;
 
 	const installPlugin = async (pkg: any) => {
+        if (!botSetting?.name) {
+            callToast("error", "Bot name not configured", 3000);
+            return;
+        }
+        if (!pkg || !pkg.id) return;
+        setInstalling(pkg.id);
+
+        try {
+            // POST add возвращает запись bot.plugins (с plugin_id и config)
+            const res = await api.post(`/api/plugins/${botSetting.name}/add`, { name: pkg.name, plugin_id: pkg.id });
+            if (res.status === 200 || res.status === 201) {
+                setData(prev => {
+                    if (!prev) return prev;
+                    const installed: BotPlugin = {
+                        plugin_id: pkg.id,
+                        bot_id: prev.bot.id, 
+                        enabled: false,
+                        config: {},
+                        plugin: pkg,
+                    };
+                    const botPlugins = [...(prev.bot.plugins || []), installed];
+                    return { ...prev, bot: { ...prev.bot, plugins: botPlugins } };
+                });
+                callToast("success", `Плагин ${pkg.name} установлен`, 3000);
+            } else {
+                callToast("error", "Ошибка установки плагина", 3000);
+            }
+        } catch (e) {
+            callToast("error", "Не удалось установить плагин (связь с сервером)", 3000);
+        } finally {
+            setInstalling(null);
+        }
+    };
+
+    const handleRemove = async (plugin: any) => {
 		if (!botSetting?.name) {
-			callToast("error", "Bot name not configured", 3000);
+			callToast("error", "Не указан bot name", 3000);
 			return;
 		}
-		if (!pkg || !pkg.id) return;
-		setInstalling(pkg.id);
+
 		try {
-			// POST add возвращает запись bot.plugins (с plugin_id и config)
-			const res = await api.post(`/api/plugins/${botSetting.name}/add`, { name: pkg.name, plugin_id: pkg.id });
-			if (res.status === 200 || res.status === 201) {
-				const installed = res.data || { plugin_id: pkg.id, bot_id: data?.bot?.id, enabled: true, config: {}, plugin: pkg };
+			const res = await api.delete(`/api/plugins/${botSetting.name}/${plugin.name}`);
+			if (res.status === 200 || res.status === 204) {
 				setData(prev => {
 					if (!prev) return prev;
-					const botPlugins = [...(prev.bot.plugins || []), installed];
+					const botPlugins = prev.bot.plugins.filter((p: any) => p.plugin_id !== plugin.plugin_id);
 					return { ...prev, bot: { ...prev.bot, plugins: botPlugins } };
-				});
-				callToast("success", `Плагин ${pkg.name} установлен`, 3000);
-			} else {
-				callToast("error", "Ошибка установки плагина", 3000);
+				})
+				callToast("success", "Плагин удален", 3000);
 			}
-		} catch (e) {
-			callToast("error", "Не удалось установить плагин (связь с сервером)", 3000);
-		} finally {
-			setInstalling(null);
-		}
-	};
 
-    const handleRemove = async (pluginId: number) => {
-        
+		} catch (e) {
+			callToast("error", "Не удалось удалить плагин (связь с сервером)", 3000);
+		}
     }
 
+	const removePlugin = async (plugin: PluginType) => {
+		if (!plugin) return;
+
+		try {
+			const res = await api.delete(`/api/plugins/${plugin.name}`);
+			if (res.status === 200 || res.status === 204) {
+				callToast("success", "Плагин удален", 3000);
+				setData(prev => {
+					if (!prev) return prev;
+					const plugins = prev.plugins.filter((p: any) => p.name !== plugin.name);
+					return { ...prev, plugins };
+				})
+			}
+
+		} catch (e) {
+			callToast("error", "Не удалось удалить плагин (связь с сервером)", 3000);
+		}
+	}
+
 	// Рендер установленных: используем getInstalledPlugins() (в котором bp.plugin используется)
+
 	const renderInstalled = () => {
 		if (loading) return Array.from({ length: 3 }).map((_, i) => <SkeletonTable key={i} count={6}/>);
 		return getInstalledPlugins().map((plugin: any) => (
 			<tr key={plugin.plugin_id} className={plugin.enabled ? "" : "opacity-60"}>
+				<td><img src={plugin?.poster || "https://content.timeweb.com/assets/65c70e62-4ae9-48bc-92ff-7886de5f50fa.jpg?width=3080&height=1600"} className="w-15 h-15 object-cover rounded-xl" /></td>
 				<td className="font-medium">{plugin.name}</td>
 				<td>{plugin.description}</td>
 				<td>
@@ -351,7 +400,7 @@ export default function Plagins() {
 						<Cog6ToothIcon className="w-5 h-5" />
 						Настроить
 					</button>
-                    <button className="btn btn-sm btn-ghost text-error" onClick={() => handleRemove(plugin.plugin_id)}>
+                    <button className="btn btn-sm btn-ghost text-error" onClick={() => handleRemove(plugin)}>
                         <TrashIcon className="w-5 h-5" />
                         Удалить
                     </button>
@@ -375,12 +424,14 @@ export default function Plagins() {
 					Управление и настройка доступных плагинов для вашего бота.
 				</p>
                 <SaveBtn />
+		
 			</div>
 
 			<div className="overflow-x-auto rounded-lg shadow mb-8">
 				<table className="table table-zebra w-full">
 					<thead>
 						<tr>
+							<th>Обложка</th>
 							<th>Название</th>
 							<th>Описание</th>
 							<th>Статус</th>
@@ -397,7 +448,16 @@ export default function Plagins() {
 
             {/* Магазин плагинов */}
             <div className="mb-8">
-                <h3 className="text-xl font-bold mb-4">Магазин плагинов</h3>
+				<div className="flex items-center justify-between w-full">
+					<h3 className="text-xl font-bold mb-4">Библотека плагинов</h3>
+					<div className="flex items-center gap-2">
+						<span>Магазин плагинов</span>
+						<button className="btn btn-sm btn-primary btn-soft" onClick={() => setshowShop(true)}>
+							<PlusIcon className="w-5 h-5" />
+						</button>
+					</div>
+
+				</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {storeList.map((pkg: any) => (
                         <div key={pkg.id} className="card bg-base-200 p-4 shadow">
@@ -407,12 +467,29 @@ export default function Plagins() {
                                     <div className="text-sm text-base-content/60">{pkg.description}</div>
                                     <div className="text-xs text-base-content/60 mt-2">Версия: {pkg.version} • Автор: {pkg.author}</div>
                                 </div>
-                                <div className="text-right">
-                                    <div className="text-sm">{pkg.price ? `${pkg.price} ₽` : "Бесплатно"}</div>
-                                    <button className="btn btn-sm btn-primary mt-2" onClick={() => installPlugin(pkg)} disabled={!!installing || !!data?.bot?.plugins?.find((p: any) => p.plugin_id === pkg.id)}>
-                                        {installing === pkg.id ? "Установка..." : "Установить"}
-                                    </button>
-                                </div>
+								<div className="flex flex-col items-end gap-2">
+									<div className="text-sm">{pkg.price ? `${pkg.price} ₽` : "Бесплатно"}</div>
+									{data?.bot?.plugins?.find((p: any) => p.plugin_id === pkg.id) ? (
+										<span className="badge badge-success">Установлен</span>
+									) : (
+										<button
+											className="btn btn-sm btn-primary"
+											onClick={() => installPlugin(pkg)}
+											disabled={!!installing}
+										>
+											{installing === pkg.id ? "Установка..." : "Установить"}
+										</button>
+									)}
+									{!data?.bot?.plugins?.find((p: any) => p.plugin_id === pkg.id) && (
+										<button
+											className="btn btn-sm btn-ghost text-error"
+											onClick={() => removePlugin(pkg)}
+										>
+											<TrashIcon className="w-5 h-5 mr-1" />
+											Удалить
+										</button>
+									)}
+								</div>
                             </div>
                         </div>
                     ))}
@@ -466,6 +543,11 @@ export default function Plagins() {
                     </div>
                 </div>
             )}
+
+			{showShop && (
+				<PlagineStore showShop={showShop} setshowShop={setshowShop} installedPlugins={defs.map((p: any) => p.name)}  />
+			)}
+
 		</div>
 	);
 }

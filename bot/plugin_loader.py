@@ -1,12 +1,68 @@
-import importlib, sys, aiohttp
+import importlib, sys, aiohttp, os, json, subprocess, sys, re
 from aiogram import Dispatcher, types, Router
 from .services.config import API_URL
 from .services.user_log import log_admin_info
 from types import ModuleType
+from collections import defaultdict
 
 plugins_root: Router | None = None
 loaded_plugins: dict[str, ModuleType] = {}
 loaded_routers: dict[str, Router] = {}
+
+
+# ================= Конфиг зависимостей =================
+
+def parse_dependecy(dep: str):
+    match = re.match(r"([a-zA-Z0-9_\-]+)\s*([=<>!]+)?\s*([\d\.]+)?", dep)
+    if not match:
+        return dep, None, None
+    pkg, op, ver = match.groups()
+    return pkg, op or None, ver or None
+
+def read_plugin_meta(plugin_name: str) -> dict:
+    """Читаем метаданные плагина"""
+    path = os.path.join("bot", "plugins", plugin_name, "plugin.json")
+    if not os.path.exists(path):
+        return {"name": plugin_name, "dependencies": []}
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def check_dependencies(active_plugins: list[str]) -> dict:
+    """Собираем зависимости плагинов"""
+    deps = defaultdict(list)
+    for name in active_plugins:
+        meta = read_plugin_meta(name)
+        for dep in meta.get("dependencies", []):
+            pkg, _, ver = parse_dependecy(dep)
+            deps[pkg].append((name, ver or "*"))
+    
+    conflicts = {pkg: vers for pkg, vers in deps.items() if len(set(v for _, v in vers if v != "*")) > 1}
+    return conflicts, deps
+
+
+async def install_missing_dependencies(deps: dict):
+    """Устанавливаем зависимости"""
+    for pkg, vers in deps.items():
+        version = next((v for _, v in vers if v != "*"), None)
+        package_spec = f"{pkg}=={version}" if version else pkg
+        if pkg:
+            try:
+                print(f"[BOT] Проверяю зависимость: {package_spec}")
+                __import__(pkg)
+            except ImportError:
+                print(f"[BOT] Устанавливаю зависимость: {package_spec}")
+                try:
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", package_spec])
+                except subprocess.CalledProcessError as e:
+                    print(f"[BOT] ❌ Не удалось установить {package_spec}: {e}")
+                    await log_admin_info(f"Ошибка при установке зависимости {package_spec}: {e}")
+                    return
+        else:
+            print(f"[BOT] не удалось установить зависимость: {package_spec} {pkg}")
+
+
+# ================== Создание роутера ==================
 
 def ensure_plugins_root(dp: Dispatcher) -> Router:
     global plugins_root
@@ -53,7 +109,15 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
     root = ensure_plugins_root(dp)
     plugins = await fetch_enabled_plugins(name)
     active_names = {p["name"] for p in plugins}
-
+    
+    conflicts, deps = check_dependencies(list(active_names))
+    if conflicts:
+        msg = "\n".join(
+            f"{pkg}: {', '.join(f'{n} ({v})' for n, v in vers)}"
+            for pkg, vers in conflicts.items()
+        )
+        await log_admin_info(f"Возникли конфликты зависимостей:\n{msg}")
+    await install_missing_dependencies(deps)
     # выгружаем/перезагружаем
     if reload:
         for module_name, module in list(loaded_plugins.items()):
@@ -93,6 +157,7 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
                     print(f"[BOT] Плагин {short} перезагружен 🔄✅")
             except Exception as e:
                 print(f"[BOT] Ошибка при перезагрузке плагина {short}: {e}")
+                await log_admin_info(f"Ошибка при перезагрузке плагина {short}: {e}")
 
     # подключаем новые активные
     for p in plugins:
@@ -108,6 +173,7 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
                 loaded_routers[module_name] = router
         except Exception as e:
             print(f"[BOT] Ошибка при подключении плагина {p['name']}: {e}")
+            await log_admin_info(f"Ошибка при подключении плагина {p['name']}: {e}")
             
     print("[DBG] plugins_root:", [getattr(r, "name", "noname") for r in root.sub_routers], f"[BOT] Подключено {len(loaded_plugins)} плагинов")
 

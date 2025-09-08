@@ -1,0 +1,16 @@
+{
+  "cooldown": 3,
+  "commands": [
+    {
+      "name": "/Translate",
+      "action": "text",
+      "response": "Плагин Translate работает!"
+    },
+    {
+      "name": "/t",
+      "action": "void",
+      "method": "helpers.translator",
+      "response": "Переводить введеный текст"
+    }
+  ]
+}

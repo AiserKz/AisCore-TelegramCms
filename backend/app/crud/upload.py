@@ -13,7 +13,7 @@ def download_file(file, types: str = "all"):
         
     file.save(path)
     filesize = os.path.getsize(path) // 1024
-    url = f"http://localhost:5000/static/uploads/{types}/{file.filename}"
+    url = f"http://localhost:5000/{path}"
     return url, path.replace("\\", "/"), filesize
 
 
