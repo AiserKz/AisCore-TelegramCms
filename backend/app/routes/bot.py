@@ -3,10 +3,9 @@ from app.core.database import db
 from app.models.plugins import Plugin
 from app.models.bot import Bot, BotPlugin
 from app.models.commands import Command
-import requests
+import requests, datetime
 from app.core.config import BOT_CONTROL_URL
 from app.models.user import TelegramUser
-import datetime
 
 
 bot_bp = Blueprint('bot', __name__, url_prefix='/bot')
@@ -127,5 +126,4 @@ def set_bot_options(name, data):
 
 def new_plugin_bot(url):
     resp = requests.post(f"{BOT_CONTROL_URL}/plugins/download", json={"url": url})
-    print(resp.json())
-    # return resp.json()
+    return resp.json()

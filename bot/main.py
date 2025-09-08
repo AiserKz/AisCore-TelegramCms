@@ -4,7 +4,6 @@ from aiogram import Bot, Dispatcher, types, BaseMiddleware
 from .plugin_loader import load_bot_plugins, load_dynamic_commands, register_global_handlers
 from .services.user_log import log_telegram_user
 from .web import setup_web_server, bot_init
-from contextlib import suppress
 
 data = bot_init()
 

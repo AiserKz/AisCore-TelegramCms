@@ -1,7 +1,6 @@
-import aiohttp
+import aiohttp, datetime
 from aiogram import types
 from .config import API_URL
-import datetime
 
 async def log_telegram_user(message: types.Message):
     async with aiohttp.ClientSession() as session:
@@ -14,7 +13,6 @@ async def log_telegram_user(message: types.Message):
             "language_code": message.from_user.language_code,
             "is_bot": message.from_user.is_bot
         })
-
 
 async def log_admin_info(text: str, users: types.User = None):
     from ..main import admin_ids, bot, admin_debug

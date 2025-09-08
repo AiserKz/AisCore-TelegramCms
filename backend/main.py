@@ -4,7 +4,7 @@ from flask_jwt_extended import (
     JWTManager
 )
 from app.core.database import db, init_DB
-from app.core.config import JWT_SECRET_KEY, init
+from app.core.config import JWT_SECRET_KEY, init, DEBUG
 from app.routes import api, bot, auth
 
 app = Flask(__name__)
@@ -25,10 +25,9 @@ app.register_blueprint(api.api_bp)
 def hello():
     return jsonify({'message': 'Бэк работает!'}), 200
 
-
 if __name__ == '__main__':
     init()
     with app.app_context():
         db.create_all()
         init_DB()
-    app.run(debug=True, port=5000)
+    app.run(debug=DEBUG, port=5000)

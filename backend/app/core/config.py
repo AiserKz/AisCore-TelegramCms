@@ -9,6 +9,7 @@ BOT_CONTROL_URL = os.getenv('BOT_CONTROL_URL')
 STATIC_FOLDER = "static"
 
 BASE_URL = os.getenv('BASE_URL')
+DEBUG = os.getenv('DEBUG')
 
 def init():
     for folder in [STATIC_FOLDER]:

@@ -1,8 +1,5 @@
-import aiohttp 
-import tempfile
-import os
+import os, aiohttp, tempfile
 from aiogram import types
-
 
 async def download_file(url: str, tmpdir: str) -> str:
     """Скачать файл по ссылке и вернуть путь до временного файла"""
@@ -15,7 +12,6 @@ async def download_file(url: str, tmpdir: str) -> str:
             with open(path, "wb") as f:
                 f.write(await resp.read())
             return path
-        
         
 async def prepare_file(url: str, tmpdir: str) -> str:
     """Определяет, нужно ли качать файл, или можно отправить ссылку"""
