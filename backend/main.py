@@ -4,7 +4,7 @@ from flask_jwt_extended import (
     JWTManager
 )
 from app.core.database import db, init_DB
-from app.core.config import JWT_SECRET_KEY, init, DEBUG
+from app.core.config import JWT_SECRET_KEY, init, DEBUG, JWT_ACCESS_TOKEN_EXPIRES, JWT_REFRESH_TOKEN_EXPIRES
 from app.routes import api, bot, auth
 
 app = Flask(__name__)
@@ -14,6 +14,8 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///db.sqlite3"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = JWT_ACCESS_TOKEN_EXPIRES
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = JWT_REFRESH_TOKEN_EXPIRES
 db.init_app(app)
 jwt = JWTManager(app)
 

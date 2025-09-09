@@ -1,3 +1,4 @@
+@import "./styles/rgbflow.css";
 @import "tailwindcss";
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark;
@@ -75,59 +76,37 @@
 }
 
 
-/* Основной контейнер кнопки */
-.rgb-border {
-  position: relative;
+
+#nprogress .bar {
+  background: rgb(153, 9, 153) !important;
+  height: 2px !important; /* толщина */
+  z-index: 50 !important;
+  box-shadow: 0 0 10px rgb(153, 9, 153), 0 0 5px rgb(153, 9, 153);
+}
+
+#nprogress .spinner-icon {
+  border-top-color: rgb(153, 9, 153) !important;
+  border-left-color: rgb(153, 9, 153) !important;
+}
+
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
   background: transparent;
-  z-index: 0;
-  transition: transform 0.1s ease;
-  overflow: hidden;
 }
 
-
-/* Вращающаяся градиентная рамка */
-.rgb-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(
-    from 90deg, indigo, rgb(131, 63, 131)
-  );
-  z-index: 0;
-  pointer-events: none;
-  transform-origin: center;
-  animation: rgb-spin 14s linear infinite, rgb-glow 2.5s linear infinite alternate;
-  filter: blur(4px); /* мягкое свечение */
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a100ff, #ff00ff);
+  border-radius: 8px;
+  border: 2px solid transparent; /* чтобы выглядело "внутри" */
+  background-clip: padding-box;
+  transition: background 0.3s ease-in-out;
 }
 
-/* Внутренний слой, закрывающий центр */
-.rgb-border::after {
-  content: "";
-  position: absolute;
-  inset: 2px; /* толщина рамки */
-  border-radius: calc(12px - 4px);
-  background: #191E24;
-  z-index: 1;
-  pointer-events: none;
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff00ff, #a100ff);
 }
-
-/* Текст сверху */
-.rgb-border > div {
-  position: relative;
-  z-index: 2;
-}
-
-/* Анимация вращения */
-@keyframes rgb-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Плавное пульсирующее свечение */
-@keyframes rgb-glow {
-  0% { filter: blur(4px) saturate(1); }
-  50% { filter: blur(8px) saturate(1.3); }
-  100% { filter: blur(6px) saturate(1.1); }
-}
-

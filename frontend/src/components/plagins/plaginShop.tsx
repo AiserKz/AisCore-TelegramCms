@@ -77,7 +77,18 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
                     {loading ? (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {Array.from({ length: 6 }).map((_, i) => (
-                                <div key={i} className="card bg-base-100 p-3 h-56 animate-pulse" />
+                                <div key={i} className="card bg-base-100 p-3 h-70 animate-pulse skeleton" >
+                                        <div className="w-full h-2/3 bg-base-content/10 rounded" />
+                                        <div className="w-full h-1/4 mt-3">
+                                            <div className="flex gap-2">
+                                                <p className="w-2/5 h-5 bg-base-content/10 rounded"></p>
+                                                <p className="w-2/12 h-5 bg-base-content/10 rounded"></p>
+                                                <p className="w-2/12 h-5 bg-base-content/10 rounded ml-auto"></p>
+                                            </div>
+                                            <p className="w-2/3 h-5 bg-base-content/10 mt-2 rounded"></p>
+                                            <p className="w-3/12 h-5 bg-base-content/10 mt-2 rounded"></p>
+                                        </div>
+                                </div>
                             ))}
                         </div>
                     ) : (
@@ -85,10 +96,12 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
                             {filtered.length === 0 ? (
                                 <div className="col-span-full text-center text-base-content/60 p-6">Ничего не найдено</div>
                             ) : (
+                                
                                 filtered.map((pkg) => (
                                     <StoreCard key={pkg.id} pkg={pkg} installing={installing} isInstalled={installedPlugins.includes(pkg.name)} onInstall={install} />
                                 ))
                             )}
+
                         </div>
                     )}
                 </div>
@@ -105,7 +118,7 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
 // вынесенная карточка плагина
 function StoreCard({ pkg, installing, isInstalled, onInstall }: { pkg: PluginType, installing: string | number | null, isInstalled: boolean, onInstall: (p: PluginType) => void }) {
     return (
-        <div className="card bg-base-100 shadow p-0 overflow-hidden">
+        <div className={`card bg-base-100 shadow p-0 overflow-hidden ${isInstalled ? "border border-success/50" : ""}`}>
             <div className="h-44 bg-gray-100">
                 <img src={pkg.poster} alt={pkg.name} className="w-full h-44 object-cover" />
             </div>
@@ -121,7 +134,7 @@ function StoreCard({ pkg, installing, isInstalled, onInstall }: { pkg: PluginTyp
                             <>
                             <div className="text-base font-semibold">{pkg.price === 0 ? "Бесплатно" : `${pkg.price} ₽`}</div>
                             <button
-                                className="btn btn-sm btn-primary mt-3"
+                                className="btn btn-sm btn-primary btn-soft mt-3"
                                 onClick={() => onInstall(pkg)}
                                 disabled={installing === pkg.id}
                             >

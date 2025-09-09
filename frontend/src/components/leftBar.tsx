@@ -1,5 +1,4 @@
-
-import { HomeIcon, PuzzlePieceIcon, UsersIcon, Cog6ToothIcon, ChevronDoubleLeftIcon, PaperAirplaneIcon, ArrowLeftEndOnRectangleIcon, CommandLineIcon } from "@heroicons/react/24/outline";
+import { HomeIcon, PuzzlePieceIcon, UsersIcon, Cog6ToothIcon, ChevronDoubleLeftIcon, PaperAirplaneIcon, ArrowLeftEndOnRectangleIcon, CommandLineIcon, UserIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppContext } from "../layout/AppLayout";
@@ -36,7 +35,7 @@ export default function LeftBar() {
 
     return (
         <div
-            className={`fixed top-0 left-0 h-screen bg-base-100 shadow flex flex-col justify-between z-20 transition-[width] duration-500 ease-out  ${
+            className={` fixed top-0 left-0 h-screen bg-base-100 shadow flex flex-col justify-between transition-[width] duration-500 ease-out  ${
                 opened ? "w-56" : "w-20"
             }`}
         >
@@ -50,20 +49,20 @@ export default function LeftBar() {
                 aria-label={opened ? "Свернуть" : "Развернуть"}
             >
                 
-                <ChevronDoubleLeftIcon className={`h-6 w-6 text-base-content transition-transform duration-600 ${ opened ? "rotate-180" : ""}` }/>
+                <ChevronDoubleLeftIcon className={`h-6 w-6 text-info transition-transform duration-600 ${ opened ? "rotate-180" : ""}` }/>
               
             </button>
 
             <div className="flex flex-col gap-4 p-4 pt-12">
-                <div className="flex items-center gap-2 mb-6 ml-2">
-                    <PuzzlePieceIcon className="h-8 w-8 text-primary shrink-0" />
+                <div className="flex items-center gap-2 mb-6 ml-2 select-none">
+                    <PuzzlePieceIcon className="h-8 w-8 text-info shrink-0" />
                     <span
                         className={`font-bold text-lg ml-10 text-base-content absolute text-nowrap transition-opacity duration-300 ease-out ${
                             opened ? "opacity-100" : "opacity-0"
                         }`}
                         style={{ pointerEvents: opened ? "auto" : "none" }}
                     >
-                        Ais|Bot Manager
+                        <span className="text-3xl text-base-content"><span className="text-info animate-pulse">A</span>is<span className="text-info">C</span>ore</span>
                     </span>
                 </div>
                 <nav className="flex flex-col gap-2 relative">
@@ -71,9 +70,8 @@ export default function LeftBar() {
                         <Link
                             key={item.name}
                             to={item.href}
-                            className={`flex items-center rounded-md px-2 py-2 hover:bg-primary/50 transition-all ${
-                                opened ? "justify-start" : "justify-start"
-                            } ${ currentPage === navItems.indexOf(item) ? "bg-primary/50" : "" }`}
+                            className={`flex items-center rounded-md px-2 py-2 hover:bg-info/50 transition-all select-none 
+                                ${currentPage === navItems.indexOf(item) ? "bg-info/50 transform scale-105 translate-x-1" : " opacity-70" }`}
                         >
                             <item.icon className="h-7 w-7 text-base-content shrink-0" />
                             <span
@@ -91,21 +89,20 @@ export default function LeftBar() {
                 
             </div>
             <div className="border-t border-base-200 p-4 ">
-                <div className="text-base-content flex-row flex items-center gap-3">
-                    <p className="text-sm text-base-content/60">ID: {user?.id}</p>
-                    <p className="text-lg">{user?.username}</p>
+                <div className="flex items-center rounded-md px-2 py-2 hover:bg-base-200 justify-start">
+                    <UserIcon className="h-6 w-6 shrink-0" />
+                    <span className={`text-xl absolute transition-opacity ml-10 duration-500  ${opened ? "opacity-100" : "opacity-0"}`}>{user?.username}</span>
                     
                 </div>
                 <button
                     onClick={logout}
-                    className={`flex items-center rounded-md px-2 py-2 hover:bg-base-200 transition-colors text-red-400 justify-start`}
+                    className={`flex items-center rounded-md px-2 py-2 hover:bg-base-200 transition-colors text-red-400 w-full justify-start `}
                 >
-                    <logoutItem.icon className="h-6 w-6 shrink-0" />
+                    <logoutItem.icon className="h-6 w-6 shrink-0 cursor-pointer" />
                     <span
                         className={`text-sm font-medium ml-10 absolute transition-opacity duration-500 ${
                             opened ? "opacity-100" : "opacity-0"
                         }`}
-                        style={{ pointerEvents: opened ? "auto" : "none" }}
                     >
                         {logoutItem.name}
                     </span>

@@ -2,8 +2,9 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import ThemeSwitcher from "../components/themeSwithcer";
 import Toast from "../components/toast";
 import type { UserType, ToastType, MainDataType, BotSetting } from "../interface/types";
-import { getProfile, login } from "../script/api";
+import { login } from "../script/api";
 import api from "../script/apiFetch";
+
 
 type AppLayoutProviderProps = {
     children: React.ReactNode;
@@ -22,10 +23,15 @@ type AppLayoutContext = {
     callToast: (status: "info" | "success" | "error", message: string, duration?: number) => ToastType;
     logout: () => void;
     botSetting: BotSetting;
+    authLoading: boolean;
 }
 
 const AppContext = createContext<AppLayoutContext | null>(null);
 
+type TokenType = {
+    access_token: string;
+    refresh_token: string;
+}
 
 export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const [theme, setTheme] = useState("light");
@@ -35,43 +41,47 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const [botRebut, setBotReboat] = useState<boolean>(false);
     const isFirstLoad = useRef(true);
     const [botSetting] = useState<BotSetting>(localStorage.getItem("bot_settings_v1") ? JSON.parse(localStorage.getItem("bot_settings_v1") as string) : {});
+    const [authLoading, setAuthLoading] = useState<boolean>(true);
+
+
 
     const handleLogin = async (username: string, password: string) => {
-        const data = await login(username, password);
-        if (data.token) {
-            localStorage.setItem("token", data.token);
-            const profile = await getProfile(data.token);
-            setUser(profile.user);
+        const data: TokenType = await login(username, password);
+        if (data) {
+            localStorage.setItem("access_token", data.access_token);
+            localStorage.setItem("refresh_token", data.refresh_token);
+            const res = await api.get("/auth/profile");
+            console.log(res.data.user);
+            setUser(res.data.user);
         } else {
-            callToast("error", data.error);
+            callToast("error", "Неправильный логин или пароль");
         }
     }
 
     const logout = () => {
-        localStorage.removeItem("token");
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
         setUser(undefined);
     }
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        setAuthLoading(true);
+        const token = localStorage.getItem("access_token");
         if (token) {
-            getProfile(token).then((profile) => {
-                setUser(profile.user);
-            });
+            const res = api.get("/auth/profile");
+            res.then(res => setUser(res.data.user)).finally(() => setAuthLoading(false));
         }
         const fetchData = async () => {
             const res = await api.get(`/api/main-data/${botSetting.name}`);
             setData(res.data);
             setLoading(false);
             setTimeout(() => isFirstLoad.current = false, 1000);
-            
         }
-        fetchData();
-
+        if (token) {
+            fetchData();  
+        }
     }, []);
 
-
-    // заменяем одиночный toast на очередь
     type ToastItem = ToastType & { id: number };
     const [toasts, setToasts] = useState<ToastItem[]>([]);
     const timersRef = useRef<Map<number, number>>(new Map());
@@ -88,7 +98,6 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const callToast = (status: "info" | "success" | "error", message: string, duration: number = 3000): ToastType => {
         const id = Date.now() + Math.floor(Math.random() * 1000);
         const item: ToastItem = { id, status, message };
-        // новые сверху
         setToasts(prev => [item, ...prev]);
 
         const timer = window.setTimeout(() => {
@@ -113,7 +122,7 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     }, [data]);
 
     return (
-        <AppContext.Provider value={{ theme, setTheme, user, handleLogin, callToast, logout, data, setData, loading, botRebut, setBotReboat, botSetting }}>
+        <AppContext.Provider value={{ theme, setTheme, user, handleLogin, callToast, logout, data, setData, loading, botRebut, setBotReboat, botSetting, authLoading }}>
             {children}
             <ThemeSwitcher />
             <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2">

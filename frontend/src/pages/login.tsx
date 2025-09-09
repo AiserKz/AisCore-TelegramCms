@@ -1,34 +1,53 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppContext } from "../layout/AppLayout";
 import { UserIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import useTitle from "../script/useTitle";
 
 export default function Login() {
+    useTitle("Вход");
     const context = useAppContext();
     const { handleLogin } = context;
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [visible, setVisible] = useState(false);
+    const [remember, setRemember] = useState(false);
 
-    const loging = () => {
+    useEffect(() => {
+        const t = setTimeout(() => setVisible(true), 80);
+        return () => clearTimeout(t);
+    }, []);
+
+    const loging = async () => {
         if (!username || !password) return;
-        handleLogin(username, password);
+        setLoading(true);
+        try {
+            await handleLogin(username, password);
+        } catch (e) {
+          
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') loging();
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-base-200 to-base-300">
-            <div className="card w-full max-w-md shadow-xl bg-base-100">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-base-200 to-base-300 p-6">
+            <div className={`card w-full max-w-md shadow-2xl bg-base-100 transform transition-all rgb-btn-purple duration-500 ease-out ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'}`}>
                 <div className="card-body p-8">
-                    <div className="flex flex-col items-center mb-8">
-                        <UserIcon className="h-12 w-12 text-primary mb-2" />
-                        <h1 className="text-3xl font-extrabold text-base-content mb-1">Вход в панель</h1>
-                        <p className="text-sm text-base-content/60">Управление вашим Telegram ботом</p>
+                    <div className="flex flex-col items-center mb-6">
+                        <img src="/Logo.png" alt="Logo" className="w-25 h-25" />
+
+                        <h1 className="text-2xl font-extrabold text-base-content mb-1">Вход в панель</h1>
+                        <p className="text-sm text-base-content/60">Управление вашим Telegram-ботом</p>
                     </div>
-                    <div className="flex flex-col gap-6">
+
+                    <div className="flex flex-col gap-4">
                         <label className="form-control w-full">
-                            <div className="label mb-2">
-                                <span className="label-text">Логин</span>
-                            </div>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                     <UserIcon className="h-5 w-5 text-base-content/40 z-10" />
@@ -40,16 +59,13 @@ export default function Login() {
                                     placeholder="Логин"
                                     onChange={(e) => setUsername(e.target.value)}
                                     value={username}
-                                    className="input input-primary w-full pl-10 rounded-md"
+                                    onKeyDown={onKeyDown}
+                                    className="input input-bordered w-full pl-10 rounded-md focus:ring-2 focus:ring-primary/30 transition"
                                 />
                             </div>
                         </label>
-                                              
-                              
+
                         <label className="form-control w-full">
-                            <div className="label mb-2">
-                                <span className="label-text">Пароль</span>
-                            </div>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                     <LockClosedIcon className="h-5 w-5 text-base-content/40 z-10" />
@@ -61,17 +77,39 @@ export default function Login() {
                                     placeholder="Пароль"
                                     onChange={(e) => setPassword(e.target.value)}
                                     value={password}
-                                    className="input input-primary w-full pl-10 rounded-md"
-
+                                    onKeyDown={onKeyDown}
+                                    className="input input-bordered w-full pl-10 rounded-md focus:ring-2 focus:ring-primary/30 transition"
                                 />
                             </div>
                         </label>
+
+                        <div className="flex items-center justify-between text-sm">
+                            <label className="flex items-center gap-2">
+                                <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="checkbox" />
+                                <span>Запомнить меня</span>
+                            </label>
+                            <a href="#" className="text-primary hover:underline">Забыли пароль?</a>
+                        </div>
+
                         <button
                             onClick={loging}
-                            className="btn btn-primary w-full mt-2 rounded-md"
+                            className={`btn btn-primary w-full mt-2 rounded-md flex items-center justify-center gap-3 ${loading ? 'opacity-90' : ''}`}
+                            disabled={loading}
                         >
-                            Войти
+                            {loading ? (
+                                <>
+                                    <span className="loading loading-spinner loading-sm" />
+                                    <span>Вход...</span>
+                                </>
+                            ) : (
+                                <span>Войти</span>
+                            )}
                         </button>
+
+                        <div className="text-center text-xs text-base-content/60 mt-2">
+                            <span>Нет аккаунта? </span>
+                            <a href="#" className="text-primary hover:underline">Свяжитесь с администратором</a>
+                        </div>
                     </div>
                 </div>
             </div>

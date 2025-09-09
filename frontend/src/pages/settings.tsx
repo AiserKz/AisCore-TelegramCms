@@ -3,6 +3,9 @@ import api from "../script/apiFetch";
 import type { SettingsState, BotSetting } from "../interface/types";
 import { useAppContext } from "../layout/AppLayout";
 import ModalUsers from "../components/setting/modalUsers";
+import HeaderPageTitle from "../components/headerPage";
+import MainDataSetting from "../components/setting/mainDataSetting";
+import useTitle from "../script/useTitle";
 
 
 
@@ -22,7 +25,7 @@ const DEFAULT_SETTINGS: BotSetting = {
   config: DEFAULTS,
 };
 
-// Небольшой список таймзон — при необходимости дополнять
+// Небольшой список таймзон при необходимости дополнять
 const TIMEZONES = [
   "UTC",
   "Europe/Moscow",
@@ -39,23 +42,23 @@ const TIMEZONES = [
 ];
 
 export default function Settings() {
+  useTitle("Настройки");
   const context = useAppContext();
   const { data } = context;
   const [settings, setSettings] = useState<BotSetting>(DEFAULT_SETTINGS);
   const [status, setStatus] = useState<string | null>(null);
-  const [testing, setTesting] = useState(false);
-  const [searchTz, setSearchTz] = useState("");
-  const [dev] = useState(true);
-  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+
+  const [searchTz, setSearchTz] = useState<string>("");
+  const [dev] = useState<boolean>(true);
+  const [notifyModalOpen, setNotifyModalOpen] = useState<boolean>(false);
   const [notifySelectedIds, setNotifySelectedIds] = useState<number[]>([]);
-  const filteredTimezones = useMemo(
+  const filteredTimezones = useMemo<string[]>(
     () =>
       TIMEZONES.filter((t) =>
         t.toLowerCase().includes(searchTz.trim().toLowerCase())
       ),
     [searchTz]
   );
-
   useEffect(() => {
     try {
       const raw = localStorage.getItem("bot_settings_v1");
@@ -74,6 +77,12 @@ export default function Settings() {
       // ignore
     }
   }, []);
+
+  useEffect(() => {
+    const saved = settings.config.notifyChatIds ?? [];
+    const ids = (data?.users || []).filter(u => saved.includes(u.chat_id)).map(u => u.id);
+    setNotifySelectedIds(ids);
+  }, [data, settings]);
 
   // Обновление верхнего уровня (name, token)
   const updateTop = <K extends keyof Omit<BotSetting, "config">>(key: K, value: BotSetting[K]) => {
@@ -101,10 +110,9 @@ export default function Settings() {
       const settingsToStore = { ...settings, config: { ...settings.config, notifyChatIds: chatIds } };
       localStorage.setItem("bot_settings_v1", JSON.stringify(settingsToStore));
       setStatus("Настройки сохранены");
-      // отправляем на бэкенд
-      const res = await api.post("/api/bot/config", settingsToStore);
-      console.log(res);
-      // обновляем локально state (чтобы UI отобразил notifyChatIds)
+
+      await api.post("/api/bot/config", settingsToStore);
+
       setSettings(settingsToStore);
       setTimeout(() => setStatus(null), 2500);
     } catch (e) {
@@ -119,118 +127,16 @@ export default function Settings() {
     setTimeout(() => setStatus(null), 2500);
   };
 
-  const testToken = async () => {
-    setTesting(true);
-    setStatus(null);
-    // Простейшая валидация формата токена Telegram: digits:chars
-    const token = settings.token.trim();
-    const ok = /^(\d+):([A-Za-z0-9_\-]+)$/.test(token);
-    // Заглушка сетевого теста
-    await new Promise((r) => setTimeout(r, 600));
-    if (!token) {
-      setStatus("Токен пустой");
-    } else if (!ok) {
-      setStatus("Токен имеет неверный формат");
-    } else {
-      setStatus("Токен выглядит корректным (для реального теста вызовите API)");
-    }
-    setTesting(false);
-    setTimeout(() => setStatus(null), 3000);
-  };
+
 
   return (
     <div className="text-base-content w-full">
       <div className="container mx-auto py-8">
-        <div className="navbar bg-base-100 rounded-box mb-6 shadow">
-          <div className="flex-1">
-            <span className="text-xl font-bold">Настройки бота</span>
-          </div>
-        </div>
+        <HeaderPageTitle title="Настройки" />
 
         <div className="mx-auto max-w-3xl space-y-6">
-          <div className="card bg-base-200 p-4 shadow">
-            <h3 className="text-lg font-bold mb-2">Основные</h3>
-            <div className="grid grid-cols-1 gap-3">
-              <label className="block">
-                <span className="label-text">Имя бота (для интерфейса)</span>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="Имя бота"
-                  value={settings.name}
-                  onChange={(e) => updateTop("name", e.target.value)}
-                />
-              </label>
 
-              <label className="block">
-                <span className="label-text">API токен (Bot Token)</span>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="123456:ABC-DEF..."
-                  value={settings.token}
-                  onChange={(e) => updateTop("token", e.target.value)}
-                />
-                <div className="flex gap-2 mt-2">
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={testToken}
-                    disabled={testing || !settings.token.trim()}
-                  >
-                    {testing ? "Тест..." : "Проверить токен"}
-                  </button>
-                  <button
-                    className="btn btn-sm"
-                    onClick={() => updateTop("token", "")}
-                  >
-                    Очистить
-                  </button>
-                </div>
-              </label>
-
-              <label className="block">
-                <span className="label-text">Webhook URL</span>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  placeholder="https://example.com/telegram/webhook"
-                  value={settings.config.webhookUrl}
-                  disabled={dev}
-                  onChange={(e) => updateConfig("webhookUrl", e.target.value)}
-                />
-                <span className="text-xs text-base-content/60">
-                  URL для приёма обновлений (оставьте пустым, если используете
-                  getUpdates).
-                </span>
-              </label>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label>
-                  <span className="label-text">Префикс команд</span>
-                  <input
-                    type="text"
-                    className="input input-bordered w-full"
-                    value={settings.config.commandPrefix}
-                    disabled={dev}
-                    onChange={(e) => updateConfig("commandPrefix", e.target.value)}
-                  />
-                </label>
-
-                <label>
-                  <span className="label-text">Макс. длина сообщения</span>
-                  <input
-                    type="number"
-                    className="input input-bordered w-full"
-                    value={settings.config.maxMessageLength}
-                    min={1}
-                    onChange={(e) =>
-                      updateConfig("maxMessageLength", Number(e.target.value))
-                    }
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
+          <MainDataSetting settings={settings} updateTop={updateTop} updateConfig={updateConfig} dev={dev} setStatus={setStatus} />
 
           <div className="card bg-base-200 p-4 shadow">
             <h3 className="text-lg font-bold mb-2">Локализация и время</h3>
@@ -354,7 +260,7 @@ export default function Settings() {
       <ModalUsers
         selectedIds={notifySelectedIds}
         setSelectedIds={setNotifySelectedIds}
-        searchQuery={searchTz/* reuse or provide separate state? */} // если хотите отдельный поиск, можно вынести new state
+        searchQuery={searchTz} 
         setSearchQuery={setSearchTz}
         isModalOpen={notifyModalOpen}
         setIsModalOpen={setNotifyModalOpen}

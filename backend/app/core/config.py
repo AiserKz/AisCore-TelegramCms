@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-import os
+import os, datetime
 
 load_dotenv()
 
@@ -10,6 +10,9 @@ STATIC_FOLDER = "static"
 
 BASE_URL = os.getenv('BASE_URL')
 DEBUG = os.getenv('DEBUG')
+
+JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=30)
+JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=30)
 
 def init():
     for folder in [STATIC_FOLDER]:

@@ -1,0 +1,129 @@
+
+/* контейнер-рамка */
+.rgb-border {
+  position: relative;
+  border-radius: 12px;
+  padding: 1.2px;             
+  display: block;
+  overflow: hidden;         
+}
+
+/* анимированный градиент позади */
+.rgb-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(from 90deg, indigo, rgb(131, 63, 131));
+  z-index: 0;
+  pointer-events: none;
+  transform-origin: center;
+  animation: rgb-spin 14s linear infinite, rgb-glow 2.5s linear infinite alternate;
+  filter: blur(6px);
+}
+
+
+.rgb-border > * {
+  position: relative;
+  z-index: 1;
+  border-radius: calc(12px - 2px); /* радиус = wrapperRadius - padding */
+}
+@keyframes rgb-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes rgb-glow {
+  0% { filter: blur(4px) saturate(0.5); }
+  50% { filter: blur(8px) saturate(1.3); }
+  100% { filter: blur(6px) saturate(1.1); }
+}
+
+
+@keyframes wave {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes pulseRings {
+  0%   { box-shadow: 0 0 10px 50px red; width: 0%; }
+  50%  { box-shadow: 0 0 10px 200px orange; width: 100%; }
+  100% { box-shadow: 0 0 10px 50px red; width: 0%; }
+}
+@keyframes aura {
+  0%   { box-shadow: 0 5px 8px -6px violet; }
+  50%  { box-shadow: 0 7px 12px -8px rgb(178, 177, 179); }
+  100% { box-shadow: 0 5px 8px -6px indigo; }
+}
+
+.rgb-btn-purple,
+.rgb-btn-fire {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  z-index: 0;
+}
+.rgb-btn-purple::before,
+.rgb-btn-fire::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  animation: rgb-spin 10s linear infinite, rgb-glow 2.5s ease-in-out infinite alternate;
+  filter: blur(10px);
+  z-index: 0;
+  transition: all 0.5s ease-in-out;
+}
+
+.rgb-btn-fire::before {
+  background: conic-gradient(
+    from 0deg,
+    red,
+    orange,
+    gold
+  );
+  opacity: 0.5;
+}
+
+.rgb-btn-purple::before {
+  background: conic-gradient(
+    from 0deg,
+    #5a00b5, /* глубокий фиолетовый */
+    #9d00ff, /* яркий пурпур */
+    #00f0ff  /* голубой неон для контраста */
+  );
+  opacity: 1;
+}
+
+.rgb-btn-fire:hover::before {
+  opacity: 1;
+  background: linear-gradient(
+    to right,
+    white,
+    rgb(131, 63, 131),
+    rgb(131, 63, 131)
+  );
+}
+
+.rgb-btn-purple::after,
+.rgb-btn-fire::after {
+  content: "";
+  position: absolute;
+  inset: 1.3px; /* регулирует толщину рамки */
+  border-radius: inherit;
+  background: inherit; 
+  z-index: 1;
+}
+
+.rgb-btn-purple > *,
+.rgb-btn-fire > * {
+  position: relative;
+  z-index: 2;
+}
+
+
+.rgb-shadow {
+  position: relative;
+  border-radius: 12px;
+  animation: aura 6s ease-in-out infinite alternate;
+}
+

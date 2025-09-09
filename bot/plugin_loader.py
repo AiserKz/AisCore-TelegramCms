@@ -14,6 +14,7 @@ loaded_routers: dict[str, Router] = {}
 
 def parse_dependecy(dep: str):
     match = re.match(r"([a-zA-Z0-9_\-]+)\s*([=<>!]+)?\s*([\d\.]+)?", dep)
+    
     if not match:
         return dep, None, None
     pkg, op, ver = match.groups()
@@ -116,7 +117,8 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
             f"{pkg}: {', '.join(f'{n} ({v})' for n, v in vers)}"
             for pkg, vers in conflicts.items()
         )
-        await log_admin_info(f"Возникли конфликты зависимостей:\n{msg}")
+        print(f"[BOT] Возникли конфликты зависимостей:\n{msg}. Могут быть проблемы в работе плагина бота. рекемендуем отключить один или несколько плагинов.")
+        await log_admin_info(f"Возникли конфликты зависимостей:\n{msg}. Могут быть проблемы в работе плагина бота. рекемендуем отключить один или несколько плагинов.")
     await install_missing_dependencies(deps)
     # выгружаем/перезагружаем
     if reload:

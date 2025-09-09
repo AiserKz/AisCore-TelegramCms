@@ -98,3 +98,11 @@ export interface BotSetting {
   config: SettingsState;
 }
 
+export interface MediaType {
+    id: number;
+    file_size: number;
+    file_name: string;
+    file_path: string;
+    created_at: Date;
+    updated_at: Date;
+}

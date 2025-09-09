@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app.core.database import db
-from app.models.plugins import Plugin
 from app.models.bot import Bot, BotPlugin
 from app.models.commands import Command
 import requests, datetime
 from app.core.config import BOT_CONTROL_URL
 from app.models.user import TelegramUser
-
+from app.crud.bot import reload_bot
 
 bot_bp = Blueprint('bot', __name__, url_prefix='/bot')
 
@@ -28,15 +27,10 @@ def get_plugins(botname: str):
 
 
 @bot_bp.route("/reload-bot/<botname>", methods=["POST"])
-def reload_bot(botname):
+def reload(botname):
     if not botname:
         return jsonify({"error": "Название бота не указано"}), 400
-    try:
-        resp = requests.post(BOT_CONTROL_URL + "/reload/" + botname)
-        return jsonify(resp.json()), resp.status_code
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
+    return reload_bot(botname)
 
 @bot_bp.route("/commands/<botname>", methods=["GET"])
 def get_commands(botname: str):
@@ -75,7 +69,6 @@ def log_user():
         user.username = username
         user.first_name = first_name
         user.last_name = last_name
-        user.language_code = language_code
         user.is_bot = is_bot
         user.last_seen = datetime.datetime.utcnow()
     db.session.commit()
@@ -110,20 +103,3 @@ def send_broadcast():
     })
     return jsonify(resp.json()), resp.status_code
 
-def get_bot_options(name):
-    resp = requests.get(f"{BOT_CONTROL_URL}/plugins/config/{name}")
-    return resp.json()
-
-def set_bot_options(name, data):
-    try:
-        resp = requests.put(f"{BOT_CONTROL_URL}/plugins/config/{name}", json=data)  # <-- json вместо data
-        resp.raise_for_status()  # чтобы сразу поймать ошибки 4xx/5xx
-        return resp.json()
-    except requests.exceptions.JSONDecodeError:
-        # если сервер вернул не JSON, возвращаем текст ответа
-        return resp.text
-
-
-def new_plugin_bot(url):
-    resp = requests.post(f"{BOT_CONTROL_URL}/plugins/download", json={"url": url})
-    return resp.json()
