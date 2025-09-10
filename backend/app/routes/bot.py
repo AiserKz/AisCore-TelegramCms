@@ -66,9 +66,12 @@ def log_user():
     else:
         # обновляем данные существующего пользователя
         user.chat_id = chat_id
-        user.username = username
-        user.first_name = first_name
-        user.last_name = last_name
+        if username:
+            user.username = username
+        if last_name:
+            user.first_name = first_name
+        if last_name:
+            user.last_name = last_name
         user.is_bot = is_bot
         user.last_seen = datetime.datetime.utcnow()
     db.session.commit()

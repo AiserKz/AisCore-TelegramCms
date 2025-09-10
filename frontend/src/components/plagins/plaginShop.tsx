@@ -55,17 +55,17 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
             <div className="bg-base-200 rounded-lg shadow-lg overflow-hidden w-full max-w-6xl h-[90vh] flex flex-col">
                 <div className="flex items-center justify-between p-4 bg-base-100 border-b">
-                    <div>
-                        <h2 className="text-lg font-bold">Магазин плагинов</h2>
-                        <div className="text-sm text-base-content/70">Каталог доступных плагинов — установите дополнения для вашего бота.</div>
+                    <div className="flex-row items-center">
+                        <h2 className="text-lg font-bold">Магазин плагинов / Ais|Store</h2>
+                        <div className="text-sm text-base-content/70">Каталог доступных плагинов - установите дополнения для вашего бота.</div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ">
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Поиск по названию или описанию..."
-                            className="input input-bordered input-sm w-64"
+                            className="input input-bordered w-full max-w-xs"
                         />
                         <button className="btn btn-ghost btn-sm" onClick={() => setshowShop(false)} title="Закрыть">
                             <XMarkIcon className="h-5 w-5" />
@@ -115,11 +115,10 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
     )
 }
 
-// вынесенная карточка плагина
 function StoreCard({ pkg, installing, isInstalled, onInstall }: { pkg: PluginType, installing: string | number | null, isInstalled: boolean, onInstall: (p: PluginType) => void }) {
     return (
-        <div className={`card bg-base-100 shadow p-0 overflow-hidden ${isInstalled ? "border border-success/50" : ""}`}>
-            <div className="h-44 bg-gray-100">
+        <div className={`card bg-base-100 shadow p-0 overflow-hidden ${isInstalled ? "border border-success/50 border-dashed" : ""}`}>
+            <div className="h-44">
                 <img src={pkg.poster} alt={pkg.name} className="w-full h-44 object-cover" />
             </div>
             <div className="p-4">

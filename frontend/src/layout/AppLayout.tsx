@@ -5,7 +5,6 @@ import type { UserType, ToastType, MainDataType, BotSetting } from "../interface
 import { login } from "../script/api";
 import api from "../script/apiFetch";
 
-
 type AppLayoutProviderProps = {
     children: React.ReactNode;
 }
@@ -24,6 +23,7 @@ type AppLayoutContext = {
     logout: () => void;
     botSetting: BotSetting;
     authLoading: boolean;
+    versionApp: string
 }
 
 const AppContext = createContext<AppLayoutContext | null>(null);
@@ -32,6 +32,8 @@ type TokenType = {
     access_token: string;
     refresh_token: string;
 }
+
+const versionApp = "v1.0";
 
 export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const [theme, setTheme] = useState("light");
@@ -42,7 +44,6 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const isFirstLoad = useRef(true);
     const [botSetting] = useState<BotSetting>(localStorage.getItem("bot_settings_v1") ? JSON.parse(localStorage.getItem("bot_settings_v1") as string) : {});
     const [authLoading, setAuthLoading] = useState<boolean>(true);
-
 
 
     const handleLogin = async (username: string, password: string) => {
@@ -122,7 +123,8 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     }, [data]);
 
     return (
-        <AppContext.Provider value={{ theme, setTheme, user, handleLogin, callToast, logout, data, setData, loading, botRebut, setBotReboat, botSetting, authLoading }}>
+        <AppContext.Provider value={{ theme, setTheme, user, handleLogin, callToast, logout,
+            data, setData, loading, botRebut, setBotReboat, botSetting, authLoading, versionApp }}>
             {children}
             <ThemeSwitcher />
             <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2">

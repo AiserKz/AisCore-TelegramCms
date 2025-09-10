@@ -110,7 +110,7 @@ export default function EditingCommandModal({ editingCommand, setEditingCommand,
 
     return (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-10 bg-black/40 p-4">
-            <div className="bg-base-100 w-full max-w-4xl p-6 rounded shadow-lg">
+            <div className="bg-base-100 w-full max-w-4xl p-6 rounded shadow-lg overflow-y-auto h-full">
                 <div className="flex justify-between items-start mb-4">
                     <div>
                         <h3 className="font-bold text-xl">Редактировать команду: /{editingCommand.name}</h3>

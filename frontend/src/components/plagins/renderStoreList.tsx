@@ -71,7 +71,7 @@ export default function RenderStoreList({ storeList, data, setData, callToast, b
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
             {storeList.map((pkg: any) => (
                 <div key={pkg.id} className="card bg-base-200 p-4 rgb-btn-fire shadow-md shadow-base-300">
-                    <div className="flex justify-between items-start">
+                    <div className="flex justify-between items-start px-1">
                         <div>
                             <div className="font-medium">{pkg.name}</div>
                             <div className="text-sm text-base-content/60">{pkg.description}</div>

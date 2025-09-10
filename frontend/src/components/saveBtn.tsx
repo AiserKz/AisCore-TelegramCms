@@ -19,7 +19,7 @@ export function SaveBtn({ absolute = true, opened = true }: { absolute?: boolean
     }
 
     return (
-        <button onClick={handleSave} className={`top-4 right-4 btn btn-success btn-soft ${absolute ? "absolute" : ""}`} disabled={loading || !botRebut} type="button">
+        <button onClick={handleSave} className={`hidden md:flex top-4 right-4 btn btn-success btn-soft ${absolute ? "absolute" : ""}`} disabled={loading || !botRebut} type="button">
             <span className="flex-row flex gap-2">
                 <BookmarkIcon className="h-5 w-5" /> 
                 {opened && "Сохранить"}

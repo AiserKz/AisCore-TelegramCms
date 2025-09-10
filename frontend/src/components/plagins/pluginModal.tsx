@@ -238,10 +238,7 @@ export default function PluginSettingModal({
                 </div>
 
                 {optionsLoading ? (
-                    <div className="p-8 text-center">
-                        <div className="mb-2">Загрузка настроек...</div>
-                        <div className="loading loading-spinner"></div>
-                    </div>
+					<SkeletonModalSetting />
                 ) : pluginFields && pluginConfig !== null ? (
                     <>
                         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
@@ -270,4 +267,20 @@ export default function PluginSettingModal({
             </div>
         </div>
     )
+}
+
+
+function SkeletonModalSetting() {
+	return (
+        <div className=" text-center h-[50vh]">
+			<div className="bg-base-300 h-full w-full animate-pulse p-2 gap-2 flex flex-col overflow-hidden">
+				{Array.from({ length: 4 }).map((_, i) => (
+					<div key={i} className="w-full h-1/4 bg-base-200 p-2 skeleton">
+						<div className="w-1/4 h-10 bg-base-100 rounded" />
+						<div className="w-full h-10 bg-base-100 mt-2 rounded"/>
+					</div>
+				))}
+			</div>
+		</div>
+	)
 }

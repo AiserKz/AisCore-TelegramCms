@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 function useTitle(title: string) {
     useEffect(() => {
-        document.title = "AisCore | " + title;
+        document.title = "AС| " + title;
     }, [title]);
 }
 

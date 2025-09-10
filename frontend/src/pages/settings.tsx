@@ -6,6 +6,7 @@ import ModalUsers from "../components/setting/modalUsers";
 import HeaderPageTitle from "../components/headerPage";
 import MainDataSetting from "../components/setting/mainDataSetting";
 import useTitle from "../script/useTitle";
+import { ArrowLeftEndOnRectangleIcon } from "@heroicons/react/24/outline";
 
 
 
@@ -44,7 +45,7 @@ const TIMEZONES = [
 export default function Settings() {
   useTitle("Настройки");
   const context = useAppContext();
-  const { data } = context;
+  const { data, versionApp, logout } = context;
   const [settings, setSettings] = useState<BotSetting>(DEFAULT_SETTINGS);
   const [status, setStatus] = useState<string | null>(null);
 
@@ -243,8 +244,12 @@ export default function Settings() {
           </div>
 
           <div className="flex justify-between items-center">
+            <div className="text-lg font-bold">Версия: {versionApp}</div>
             <div className="text-sm text-base-content/60">{status}</div>
             <div className="flex gap-2">
+              <button className="btn btn-soft btn-error" onClick={logout}>
+                <ArrowLeftEndOnRectangleIcon className="h-6 w-6" />
+              </button>
               <button className="btn" onClick={resetToDefaults}>
                 Сбросить
               </button>

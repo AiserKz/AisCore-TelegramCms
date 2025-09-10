@@ -9,6 +9,7 @@ import HeaderPageTitle from "../components/headerPage";
 import RenderStoreList from "../components/plagins/renderStoreList";
 import PluginSettingModal from "../components/plagins/pluginModal";
 import useTitle from "../script/useTitle";
+import StatusBar from "../components/statusBar";
 
 export default function Plagins() {
 	useTitle("Плагины");
@@ -129,16 +130,14 @@ export default function Plagins() {
 	const renderInstalled = () => {
 		if (loading) return Array.from({ length: 3 }).map((_, i) => <SkeletonTable key={i} count={6}/>);
 		return getInstalledPlugins().map((plugin: any) => (
-			<tr key={plugin.plugin_id} className={`hover:bg-base-100 transition-all duration-300 ease-in-out ${plugin.enabled ? "" : "opacity-60"}`}>
+			<tr key={plugin.plugin_id} className={`hover:bg-base-100 transition-all duration-300 ease-in-out ${plugin.enabled ? "translate-x-1" : "opacity-60"}`}>
 				<td><img src={plugin?.poster || "https://content.timeweb.com/assets/65c70e62-4ae9-48bc-92ff-7886de5f50fa.jpg?width=3080&height=1600"} className="w-15 h-15 object-cover rounded-xl" /></td>
 				<td className="font-medium">{plugin.name}</td>
 				<td>{plugin.description}</td>
-				<td>
-					<span className={plugin.enabled ? "badge badge-success w-full" : "badge badge-error w-full"}>
-						{plugin.enabled ? "Активен" : "Неактивен"}
-					</span>
+				<td className="min-w-35">
+					<StatusBar isActive={plugin.enabled} />
 				</td>
-				<td>
+				<td className="w-110">
 					{plugin.enabled ? (
 						<button className="btn btn-sm btn-secondary btn-soft flex-1 mr-2" onClick={() => handleToggle(plugin.plugin_id)}>
 							<StopIcon className="w-5 h-5" />
@@ -177,7 +176,7 @@ export default function Plagins() {
 		
 			</div>
 
-			<div className="overflow-x-auto rounded-lg shadow mb-8">
+			<div className="overflow-x-auto md:overflow-x-hidden rounded-lg shadow mb-8">
 				<table className="table table-zebra w-full">
 					<thead>
 						<tr>

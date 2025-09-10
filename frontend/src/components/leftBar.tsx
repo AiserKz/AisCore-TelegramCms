@@ -1,41 +1,26 @@
-import { HomeIcon, PuzzlePieceIcon, UsersIcon, Cog6ToothIcon, ChevronDoubleLeftIcon, PaperAirplaneIcon, ArrowLeftEndOnRectangleIcon, CommandLineIcon, UserIcon } from "@heroicons/react/24/outline";
+import { PuzzlePieceIcon, ChevronDoubleLeftIcon, ArrowLeftEndOnRectangleIcon, UserIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppContext } from "../layout/AppLayout";
 import { SaveBtn } from "./saveBtn";
-
-const navItems = [
-    { name: "Главная", icon: HomeIcon, href: "/" },
-    { name: "Команды", icon: CommandLineIcon, href: "/commands" },
-    { name: "Плагины", icon: PuzzlePieceIcon, href: "/plagins" },
-    { name: "Пользователи", icon: UsersIcon, href: "/users" },
-    { name: "Рассылки", icon: PaperAirplaneIcon, href: "/send" },
-    { name: "Настройки", icon: Cog6ToothIcon, href: "/settings" }
-];
+import { checkPage, navItems } from "../data/navBarItemsData";
 
 const logoutItem = { name: "Выйти", icon: ArrowLeftEndOnRectangleIcon, href: "#" };
-
-const checkPage = () => {
-    const index = navItems.findIndex((item) => item.href === location.pathname);
-    return index >= 0 ? index : 0;
-}
 
 
 export default function LeftBar() {
     const [opened, setOpened] = useState(localStorage.getItem("opened") === "true" ? true : false);
     const location = useLocation();
-    const [currentPage, setCurrentPage] = useState(checkPage());
-    
-    const context = useAppContext();
-    const { user, logout, botRebut } = context;
-
+    const [currentPage, setCurrentPage] = useState<number>(checkPage());
     useEffect(() => {
         setCurrentPage(checkPage());
     }, [location]);
+    const context = useAppContext();
+    const { user, logout, botRebut, versionApp } = context;
 
     return (
         <div
-            className={` fixed top-0 left-0 h-screen bg-base-100 shadow flex flex-col justify-between transition-[width] duration-500 ease-out  ${
+            className={` fixed top-0 left-0 h-screen bg-base-100 shadow flex-col justify-between transition-[width] duration-500 ease-out hidden md:flex  ${
                 opened ? "w-56" : "w-20"
             }`}
         >
@@ -63,6 +48,7 @@ export default function LeftBar() {
                         style={{ pointerEvents: opened ? "auto" : "none" }}
                     >
                         <span className="text-3xl text-base-content"><span className="text-info animate-pulse">A</span>is<span className="text-info">C</span>ore</span>
+                        <span className="text-sm text-base-content/60 font-sans m-2">{versionApp}</span>
                     </span>
                 </div>
                 <nav className="flex flex-col gap-2 relative">

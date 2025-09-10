@@ -1,33 +1,4 @@
 
-/* контейнер-рамка */
-.rgb-border {
-  position: relative;
-  border-radius: 12px;
-  padding: 1.2px;             
-  display: block;
-  overflow: hidden;         
-}
-
-/* анимированный градиент позади */
-.rgb-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(from 90deg, indigo, rgb(131, 63, 131));
-  z-index: 0;
-  pointer-events: none;
-  transform-origin: center;
-  animation: rgb-spin 14s linear infinite, rgb-glow 2.5s linear infinite alternate;
-  filter: blur(6px);
-}
-
-
-.rgb-border > * {
-  position: relative;
-  z-index: 1;
-  border-radius: calc(12px - 2px); /* радиус = wrapperRadius - padding */
-}
 @keyframes rgb-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

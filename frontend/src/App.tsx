@@ -12,6 +12,10 @@ import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 import { useEffect } from "react";
 import NotFound from "./pages/not-fount";
+import TabBar from "./components/TabBar";
+import About from "./pages/about";
+
+
 
 function ProgressBar() {
   const location = useLocation();
@@ -32,6 +36,7 @@ function App() {
   const context = useAppContext();
   const {authLoading, user} = context;
 
+  
   if (authLoading) {
     return <div className="w-screen h-screen flex justify-center items-center">
       <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -48,8 +53,9 @@ function App() {
   return (
     <Router>
       <LeftBar />
+      <TabBar />
       <ProgressBar />
-      <div className="bg-base-200 text-base-content overflow-hidden md:px-60 pl-20  min-h-screen"> 
+      <div className="bg-base-200 text-base-content overflow-hidden md:px-20 lg:px-60 px-5 min-h-screen pb-30"> 
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/commands" element={<Commands />} />
@@ -57,6 +63,7 @@ function App() {
           <Route path="/plagins" element={<Plagins />} />
           <Route path="/send" element={<Sender />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </div>

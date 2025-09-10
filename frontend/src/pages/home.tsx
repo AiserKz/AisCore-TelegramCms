@@ -1,4 +1,6 @@
+import { CommandLineIcon, PuzzlePieceIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import HeaderPageTitle from "../components/headerPage";
+import StatusBar from "../components/statusBar";
 import { useAppContext } from "../layout/AppLayout";
 import { formatDate } from "../script/helpers";
 import useTitle from "../script/useTitle";
@@ -17,31 +19,26 @@ export default function Home() {
                     <h2 className="text-2xl font-bold mb-2">Dashboard</h2>
                     <p className="text-base-content/70">Обзор производительности бота и активности пользователей.</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="rgb-border rounded-xl p-[2px]">
-                        <div className="stats shadow rounded-lg bg-base-100 w-full">
-                        <div className="stat ">
-                            <div className="stat-title">Пользователей</div>
-                            <div className="stat-value">{data?.total_count.users || 0}</div>
-                        </div>
-                        </div>
-                    </div>
-
-                    <div className="rgb-border rounded-xl p-[2px]">
-                        <div className="stats shadow rounded-lg bg-base-100 w-full">
-                        <div className="stat">
-                            <div className="stat-title">Активных команд</div>
-                            <div className="stat-value">{data?.total_count.commands || 0}</div>
-                        </div>
+                <div className="grid grid-cols-3 md:grid-cols-3 gap-6 mb-8">
+                    <div className="rgb-btn-purple bg-base-200 rounded-xl p-2">
+                        <div className="stat-title">Пользователей</div>
+                        <div className="stat-value flex items-center gap-2">
+                            {data?.total_count.users || 0}
+                            <UserGroupIcon className="h-6 w-6" />
                         </div>
                     </div>
-
-                    <div className="rgb-border rounded-xl p-[2px]">
-                        <div className="stats shadow rounded-lg bg-base-100 w-full">
-                        <div className="stat">
-                            <div className="stat-title">Плагинов включено</div>
-                            <div className="stat-value">{data?.total_count.plugins || 0}</div>
+                    <div className="rgb-btn-purple bg-base-200 rounded-xl p-2">
+                        <div className="stat-title">Активных команд</div>
+                        <div className="stat-value flex items-center gap-2">
+                            {data?.total_count.commands || 0}
+                            <CommandLineIcon className="h-6 w-6" />
                         </div>
+                    </div>
+                    <div className="rgb-btn-purple bg-base-200 rounded-xl p-2">
+                        <div className="stat-title">Плагинов включено</div>
+                        <div className="stat-value flex items-center gap-2">
+                            {data?.total_count.plugins || 0}
+                            <PuzzlePieceIcon className="h-6 w-6" />
                         </div>
                     </div>
                 </div>
@@ -59,9 +56,9 @@ export default function Home() {
                             </thead>
                             <tbody>
                                 {data?.commands.map((row) => (
-                                    <tr key={row.id} className={row.enabled ? "" : "opacity-50"}>
+                                    <tr key={row.id} className={`hover:bg-base-100 ${row.enabled ? "" : "opacity-50"}`}>
                                         <td>{row.name}</td>
-                                        <td className={row.enabled ? "badge badge-success" : "badge badge-error"}>{row.enabled ? "Включена" : "Отключена"}</td>
+                                        <td><StatusBar isActive={row.enabled} /></td>
                                         <td>{formatDate(row.created_at)}</td>
                                     </tr>
                                 ))}
@@ -83,17 +80,10 @@ export default function Home() {
                             </thead>
                             <tbody >
                                 {data?.bot.plugins.map((row) => (
-                                    <tr key={row.plugin_id} className={row.enabled ? "" : "opacity-50"}>
+                                    <tr key={row.plugin_id} className={`hover:bg-base-100 ${row.enabled ? "" : "opacity-50"}`}>
                                         <td>{row.plugin.name}</td>
                                         <td>
-                                            <span className={`
-                                                badge w-1/2
-                                                ${row.enabled
-                                                    ? "badge-success"
-                                                    : "badge-error"}
-                                            `}>
-                                                {row.enabled ? "Включён" : "Отключён"}
-                                            </span>
+                                            <StatusBar isActive={row.enabled} />
                                         </td>
                                         <td>{row.plugin.version}</td>
                                     </tr>

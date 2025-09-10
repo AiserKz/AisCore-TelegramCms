@@ -2,6 +2,7 @@ import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { formatDate } from "../../script/helpers";
 import SkeletonTable from "../skeletonTable";
 import type { CommandType } from "../../interface/types";
+import StatusBar from "../statusBar";
 
 interface CommandRenderProps {
     commands: CommandType[];
@@ -15,7 +16,7 @@ interface CommandRenderProps {
 export default function renderCommands({ commands, loading, toggleEnabled, openEdit, deleteCommand, isDeleting }: CommandRenderProps) {
     if (loading) return Array.from({ length: 3 }).map((_, i) => <SkeletonTable key={i} />);
     return commands.map((row: CommandType) => (
-        <tr key={row.id} className={row.enabled ? "" : "opacity-60"} >
+        <tr key={row.id} className={`hover:bg-base-100 ${row.enabled ? "" : "opacity-60"}`} >
             <td>/{row.name}</td>
             <td>
                 <div className="flex items-center gap-2">
@@ -25,9 +26,9 @@ export default function renderCommands({ commands, loading, toggleEnabled, openE
                 </div>
             </td>
             <td>{formatDate((row as any).created_at || row.created_at)}</td>
-            <td>
-                <div className="flex items-center gap-2">
-                    <span className={`flex-1 ${row.enabled ? "badge badge-success" : "badge badge-error"}`}>{row.enabled ? "Включена" : "Отключена"}</span>
+            <td className="w-1/6">
+                <div className="flex items-center gap-2 justify-between">
+                    <StatusBar isActive={row.enabled} />
                     <input type="checkbox" className="toggle toggle-sm" checked={!!row.enabled} onChange={() => toggleEnabled(row.id)} />
                 </div>
             </td>

@@ -16,7 +16,7 @@ type ModalProps = {
 const renderUsers = ({loading, data, handleSelectUser, handleDelete}: ModalProps) => {
     if (loading) return Array.from({ length: 6 }).map((_, i) => <SkeletonTable key={i} count={11} />);
     return data?.users.map((user: TelegramUserType) => (
-        <tr key={user.id}>
+        <tr key={user.id} className="hover:bg-base-100">
             
             <td>{user.user_id}</td>
             <td className="font-medium">{user.first_name}</td>
@@ -38,21 +38,21 @@ const renderUsers = ({loading, data, handleSelectUser, handleDelete}: ModalProps
             <td>{formatDate(user.last_seen)}</td>
             <td>{formatDate(user.updated_at)}</td>
             <td>{user.language_code?.toUpperCase()}</td>
-            <td className="text-right">
-            <button
-                className="btn btn-sm btn-soft btn-info mr-2"
-                title="Редактировать"
-                onClick={() => handleSelectUser(user)}
-            >
-               <PencilIcon className="w-5 h-5" />
-            </button>
-            <button
-                className="btn btn-sm btn-soft btn-error"
-                title="Удалить"
-                onClick={() => handleDelete(user.id)}
-            >
-                <TrashIcon className="w-5 h-5" />
-            </button>
+            <td className="text-right items-center flex">
+                <button
+                    className="btn btn-sm btn-soft btn-info mr-2"
+                    title="Редактировать"
+                    onClick={() => handleSelectUser(user)}
+                >
+                <PencilIcon className="w-5 h-5" />
+                </button>
+                <button
+                    className="btn btn-sm btn-soft btn-error"
+                    title="Удалить"
+                    onClick={() => handleDelete(user.id)}
+                >
+                    <TrashIcon className="w-5 h-5" />
+                </button>
             </td>
         </tr>
         ))

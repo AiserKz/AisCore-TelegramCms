@@ -1,3 +1,4 @@
+@import url('https://fonts.cdnfonts.com/css/inter');
 @import "./styles/rgbflow.css";
 @import "tailwindcss";
 @plugin "daisyui" {
@@ -74,8 +75,16 @@
   --depth: 1;
   --noise: 0;
 }
+/* 
+@import url('https://fonts.cdnfonts.com/css/source-sans-pro');
+@import url('https://fonts.cdnfonts.com/css/nunito-sans'); */
 
 
+html, body {
+  /* font-family: 'Source Sans Pro', sans-serif !important; */
+  /* font-family: 'Nunito Sans', sans-serif !important; */
+  font-family: 'Inter', sans-serif !important;
+}
 
 #nprogress .bar {
   background: rgb(153, 9, 153) !important;

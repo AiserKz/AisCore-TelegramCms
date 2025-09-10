@@ -73,18 +73,18 @@ const pluginsTestData: PluginType[] = [
         url: "http://localhost:5000/static/uploads/plugins/Translate.zip",
         poster: "https://translations.telegram.org/img/translations/lang_banner.png?1"
     },
-    {
-        id: 12,
-        name: "AutoResponder",
-        enabled: false,
-        description: "Автоответчик по ключевым словам.",
-        price: 299,
-        version: "1.0.2",
-        author: "Aiser",
-        license: "Ais",
-        url: "http://localhost:5000/static/uploads/plugins/Autoreponder.zip",
-        poster: "https://play-lh.googleusercontent.com/NgqZfB39BS_DRtFhfrPcwFvabP5CJsMQl5rMsexEkpxse4StzNrJ2LwHOwke__FSwA"
-    }
+    // {
+    //     id: 12,
+    //     name: "AutoResponder",
+    //     enabled: false,
+    //     description: "Автоответчик по ключевым словам.",
+    //     price: 299,
+    //     version: "1.0.2",
+    //     author: "Aiser",
+    //     license: "Ais",
+    //     url: "http://localhost:5000/static/uploads/plugins/Autoreponder.zip",
+    //     poster: "https://play-lh.googleusercontent.com/NgqZfB39BS_DRtFhfrPcwFvabP5CJsMQl5rMsexEkpxse4StzNrJ2LwHOwke__FSwA"
+    // }
 ]
 
 export default pluginsTestData

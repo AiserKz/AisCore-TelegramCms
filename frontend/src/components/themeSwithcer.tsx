@@ -1,8 +1,6 @@
 import { CloudIcon, MoonIcon, SparklesIcon, SunIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 
-
-// DaisyUI ThemeSwitcher (используем встроенный select)
 export default function ThemeSwitcher() {
     const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
 
@@ -27,7 +25,7 @@ export default function ThemeSwitcher() {
     }
     
     return (
-        <div className="fab fab-flower">
+        <div className="fab fab-flower mb-15 md:mb-0">
             <div tabIndex={0} role="button" className="btn btn-lg btn-info btn-circle">{renderIconSelect()}</div>
             <button className="fab-main-action btn btn-circle btn-lg btn-success"><XMarkIcon className="h-6 w-6" /></button>
 
@@ -39,7 +37,7 @@ export default function ThemeSwitcher() {
                 <button className="btn btn-lg btn-circle btn-soft" onClick={() => setTheme("dark")}><MoonIcon className="h-6 w-6" /></button>
             </div>
             
-            <div className="tooltip tooltip-left" data-tip="Щелк">
+            <div className="tooltip tooltip-left" data-tip="Облоко">
                 <button className="btn btn-lg btn-circle btn-soft btn-info" onClick={() => setTheme("silk")}><CloudIcon className="h-6 w-6" /></button>
             </div>
             

@@ -129,7 +129,7 @@ export default function Commands() {
                         </label>
                         <label>Ответ: </label>
                         <textarea 
-                            className="textarea textarea-primary textarea- w-1/2"
+                            className="textarea textarea-primary textarea- w-full md:w-1/2"
                             placeholder="Текст ответа" 
                             value={newCommand?.response_text}
                             onChange={(e) => setNewCommand({

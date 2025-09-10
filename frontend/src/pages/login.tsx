@@ -11,8 +11,9 @@ export default function Login() {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
-    const [visible, setVisible] = useState(false);
-    const [remember, setRemember] = useState(false);
+    const [visible, setVisible] = useState<boolean>(false);
+    const [remember, setRemember] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
 
     useEffect(() => {
         const t = setTimeout(() => setVisible(true), 80);
@@ -25,7 +26,7 @@ export default function Login() {
         try {
             await handleLogin(username, password);
         } catch (e) {
-          
+            setError('Неправильный логин или пароль');
         } finally {
             setLoading(false);
         }
@@ -39,9 +40,8 @@ export default function Login() {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-base-200 to-base-300 p-6">
             <div className={`card w-full max-w-md shadow-2xl bg-base-100 transform transition-all rgb-btn-purple duration-500 ease-out ${visible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-6 scale-95'}`}>
                 <div className="card-body p-8">
-                    <div className="flex flex-col items-center mb-6">
-                        <img src="/Logo.png" alt="Logo" className="w-25 h-25" />
-
+                    <div className="flex flex-col items-center mb-6 select-none">
+                        <img src="/Logo.png" alt="Logo" className="w-25 h-25 select-none" />
                         <h1 className="text-2xl font-extrabold text-base-content mb-1">Вход в панель</h1>
                         <p className="text-sm text-base-content/60">Управление вашим Telegram-ботом</p>
                     </div>
@@ -110,6 +110,9 @@ export default function Login() {
                             <span>Нет аккаунта? </span>
                             <a href="#" className="text-primary hover:underline">Свяжитесь с администратором</a>
                         </div>
+                        <span className="text-sm text-error mt-2 text-center">
+                            {error}
+                        </span>
                     </div>
                 </div>
             </div>

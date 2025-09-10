@@ -179,7 +179,7 @@ export default function Sender() {
       <div className="container mx-auto py-8">
         <HeaderPageTitle title="Рассылка" />
 
-        <div className="">
+        <div>
           <h2 className="mb-6 text-3xl font-bold">Создание рассылки</h2>
 
           <div className="space-y-8">
@@ -194,54 +194,62 @@ export default function Sender() {
               />
             </div>
 
-            <div>
+            <div className="overflow-x-auto">
               <span className="mb-2 block text-sm font-medium">Медиафайлы</span>
-              <input type="file" id="fileInputImage" onChange={uploadFile} hidden accept="image/*" />
-              <input type="file" id="fileInputVideo" onChange={uploadFile} hidden accept="video/*" />
-              <input type="file" id="fileInputFile" onChange={uploadFile} hidden accept="application/*" />
-              <div className="flex items-center gap-4">
-                <button className="btn btn-soft btn-accent" onClick={() => document.getElementById("fileInputImage")?.click()}>
-                  <PhotoIcon className="h-5 w-5" />
-                  <span>Добавить фото</span>
-                </button>
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <input type="file" id="fileInputImage" onChange={uploadFile} hidden accept="image/*" />
+                <input type="file" id="fileInputVideo" onChange={uploadFile} hidden accept="video/*" />
+                <input type="file" id="fileInputFile" onChange={uploadFile} hidden accept="application/*" />
 
-                {/* Новая кнопка: открыть медиатеку */}
-                <button className="btn btn-soft btn-secondary" onClick={openMediaModal}>
-                  <PhotoIcon className="h-5 w-5" />
-                  <span>Из медиатеки</span>
-                </button>
+                <div className="flex flex-wrap gap-2 items-center">
+                  {/* единый стиль кнопок */}
+                  <button className="btn btn-soft h-9 px-3 flex items-center gap-2 text-sm" onClick={() => document.getElementById("fileInputImage")?.click()}>
+                    <PhotoIcon className="h-4 w-4" />
+                    <span>Фото</span>
+                  </button>
 
-                <div className="flex items-center gap-2" >
-                  <PhotoIcon className="h-5 w-5" />
-                  <span>URL</span>
-                  <input 
-                    type="text" 
-                    className="input outline-none focus:border-none focus:ring-0" 
-                    onKeyDown={(e) => e.key === "Enter" && (
-                      addUrlImage(e.currentTarget.value),
-                      e.currentTarget.value = ""
-                    )} 
-                  />
+                  <button className="btn btn-soft h-9 px-3 flex items-center gap-2 text-sm" onClick={openMediaModal}>
+                    <PhotoIcon className="h-4 w-4" />
+                    <span>Медиатека</span>
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <PhotoIcon className="h-4 w-4 text-base-content/70" />
+                    <span className="text-sm mr-1">URL</span>
+                    <input 
+                      type="text" 
+                      className="input input-sm w-40 md:w-64" 
+                      onKeyDown={(e) => e.key === "Enter" && (
+                        addUrlImage(e.currentTarget.value),
+                        e.currentTarget.value = ""
+                      )} 
+                    />
+                  </div>
+
+                  <button className="btn btn-soft h-9 px-3 flex items-center gap-2 text-sm" onClick={() => document.getElementById("fileInputVideo")?.click()}>
+                    <FilmIcon className="h-4 w-4" />
+                    <span>Видео</span>
+                  </button>
+
+                  <button className="btn btn-soft h-9 px-3 flex items-center gap-2 text-sm" onClick={() => document.getElementById("fileInputFile")?.click()}>
+                    <DocumentIcon className="h-4 w-4" />
+                    <span>Документ</span>
+                  </button>
                 </div>
-                <button className="btn btn-soft btn-accent" onClick={() => document.getElementById("fileInputVideo")?.click()}>
-                    <FilmIcon className="h-5 w-5" />
-                  <span>Добавить видео</span>
-                </button>
-                <button className="btn btn-soft btn-accent" onClick={() => document.getElementById("fileInputFile")?.click()}>
-                    <DocumentIcon className="h-5 w-5" />
-                  <span>Добавить документ</span>
-                </button>
               </div>
-              <div>
+
+              <div className="mt-4">
                 {(images.length > 0 || video.length > 0 || documents.length > 0 || allFiles.length > 0 ) && (
-                  <MediaRender
-                    images={images}
-                    video={video}
-                    documents={documents}
-                    allFiles={allFiles}
-                    deleteItems={deleteItems}
-                    blocking={blocking}
-                  />
+                  <div className="overflow-x-auto -mx-2 px-2">
+                    <MediaRender
+                      images={images}
+                      video={video}
+                      documents={documents}
+                      allFiles={allFiles}
+                      deleteItems={deleteItems}
+                      blocking={blocking}
+                    />
+                  </div>
                 )}
               </div>
             </div>
