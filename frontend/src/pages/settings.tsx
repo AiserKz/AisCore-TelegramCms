@@ -45,8 +45,8 @@ const TIMEZONES = [
 export default function Settings() {
   useTitle("Настройки");
   const context = useAppContext();
-  const { data, versionApp, logout } = context;
-  const [settings, setSettings] = useState<BotSetting>(DEFAULT_SETTINGS);
+  const { data, versionApp, logout, botSetting } = context;
+  const [settings, setSettings] = useState<BotSetting>(botSetting || DEFAULT_SETTINGS);
   const [status, setStatus] = useState<string | null>(null);
 
   const [searchTz, setSearchTz] = useState<string>("");
@@ -60,27 +60,10 @@ export default function Settings() {
       ),
     [searchTz]
   );
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("bot_settings_v1");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        // поддержка старой структуры (если сохранён просто SettingsState)
-        if (parsed && typeof parsed === "object") {
-          if (parsed.config && parsed.name !== undefined) {
-            setSettings(parsed as BotSetting);
-          } else {
-            setSettings({ ...DEFAULT_SETTINGS, config: { ...(DEFAULTS), ...(parsed as Partial<SettingsState>) }});
-          }
-        }
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
+
 
   useEffect(() => {
-    const saved = settings.config.notifyChatIds ?? [];
+    const saved = settings.config?.notifyChatIds ?? [];
     const ids = (data?.users || []).filter(u => saved.includes(u.chat_id)).map(u => u.id);
     setNotifySelectedIds(ids);
   }, [data, settings]);
@@ -95,10 +78,9 @@ export default function Settings() {
     setSettings(prev => ({ ...prev, config: { ...prev.config, [key]: value } }));
   };
 
-  // Открыть модалку получателей — предзаполняем selectedIds по chat_id из settings.config.notifyChatIds
+
   const openNotifyModal = () => {
     const saved = settings.config.notifyChatIds ?? [];
-    // сопоставляем chat_id -> user.id
     const ids = (data?.users || []).filter(u => saved.includes(u.chat_id)).map(u => u.id);
     setNotifySelectedIds(ids);
     setNotifyModalOpen(true);
@@ -106,7 +88,11 @@ export default function Settings() {
 
   const saveSettings = async () => {
     try {
-      // собираем chat_id из выбранных user.id
+      if (!settings.name || !settings.token) {
+        setStatus("Название и токен не могут быть пустыми");
+        setTimeout(() => setStatus(null), 2500);
+        return;
+      }
       const chatIds = (data?.users || []).filter(u => notifySelectedIds.includes(u.id)).map(u => u.chat_id);
       const settingsToStore = { ...settings, config: { ...settings.config, notifyChatIds: chatIds } };
       localStorage.setItem("bot_settings_v1", JSON.stringify(settingsToStore));
@@ -119,6 +105,8 @@ export default function Settings() {
     } catch (e) {
       setStatus("Ошибка сохранения");
       setTimeout(() => setStatus(null), 2500);
+    } finally {
+      if (!settings.name || !settings.token) window.location.href = "/";
     }
   };
 
@@ -147,7 +135,7 @@ export default function Settings() {
                 <select
                   className="select select-bordered w-full"
                   disabled={dev}
-                  value={settings.config.language}
+                  value={settings?.config?.language}
                   onChange={(e) => updateConfig("language", e.target.value)}
                 >
                   <option value="ru">Русский</option>
@@ -171,7 +159,7 @@ export default function Settings() {
                   <select
            
                     className="select select-bordered flex-1"
-                    value={settings.config.timezone}
+                    value={settings.config?.timezone || ""}
                     onChange={(e) => updateConfig("timezone", e.target.value)}
                   >
                     {filteredTimezones.map((tz) => (
@@ -202,7 +190,7 @@ export default function Settings() {
                   type="checkbox"
                   disabled={dev}
                   className="toggle"
-                  checked={settings.config.enableWebhooks}
+                  checked={settings.config?.enableWebhooks}
                   onChange={(e) => updateConfig("enableWebhooks", e.target.checked)}
                 />
               </label>
@@ -221,7 +209,7 @@ export default function Settings() {
                   <input
                     type="checkbox"
                     className="toggle"
-                    checked={settings.config.enableNotifications}
+                    checked={settings.config?.enableNotifications}
                     onChange={(e) => updateConfig("enableNotifications", e.target.checked)}
                   />
                   <button className="btn btn-ghost btn-sm mt-1" onClick={openNotifyModal}>Настроить получателей</button>

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.core.database import db
-from app.models.bot import Bot, BotPlugin
+from app.models.Bot import Bot, BotPlugin
 from app.models.commands import Command
 import requests, datetime
 from app.core.config import BOT_CONTROL_URL
@@ -11,9 +11,19 @@ bot_bp = Blueprint('bot', __name__, url_prefix='/bot')
 
 @bot_bp.route("/init-bot", methods=["POST"])
 def init_bot():
-    bot = db.session.query(Bot).first()
-    bot_name = bot.name
-    return jsonify({"bot_name": bot_name, "bot_token": bot.token, "config": bot.config}), 200
+    try:
+        bot = db.session.query(Bot).filter_by(is_active=True).first()
+        if not bot:
+            return jsonify({"error": "Активный бот не найден"}), 403
+
+        return jsonify({
+            "bot_name": bot.name,
+            "bot_token": bot.token,
+            "config": bot.config
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
     
 
 @bot_bp.route("/plugins/<botname>", methods=["GET"])
@@ -106,3 +116,13 @@ def send_broadcast():
     })
     return jsonify(resp.json()), resp.status_code
 
+
+
+@bot_bp.route("/stop/<botname>", methods=["POST"])
+def stop_bot(botname: str):
+    bot = db.session.query(Bot).filter(Bot.name == botname).first()
+    if not bot:
+        return jsonify({"error": "Бот не найден"}), 404
+    bot.is_active = False
+    db.session.commit()
+    return jsonify({"status": "ok"}), 200

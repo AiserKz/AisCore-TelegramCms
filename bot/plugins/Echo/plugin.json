@@ -1,9 +1,0 @@
-{
-    "name": "Echo",
-    "version": "1.0.0",
-    "description": "Плагин для эхо-сообщений.",
-    "author": "Aiser",
-    "dependencies": [
-        
-    ]
-}

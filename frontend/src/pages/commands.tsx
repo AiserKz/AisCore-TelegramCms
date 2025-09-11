@@ -18,6 +18,8 @@ export default function Commands() {
     const [editingCommand, setEditingCommand] = useState<CommandType | null>(null);
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
+    const [isFetching, setIsFetching] = useState<boolean>(false);
+
     const handleCreateCommand = async () => {
         if (!newCommand) return;
         if (newCommand.name.trim() === "" || newCommand.description.trim() === "" || newCommand.response_text.trim() === "") {
@@ -74,8 +76,10 @@ export default function Commands() {
     };
 
     const toggleEnabled = async (id: number) => {
+        if (isFetching) return;
         const cmd = data?.commands.find(c => c.id === id);
         if (!cmd) return;
+        setIsFetching(true);
         const updated = { ...cmd, enabled: !cmd.enabled };
         setData(prev => prev ? 
             { ...prev, commands: prev.commands.map(c => c.id === id ? updated : c)}
@@ -86,6 +90,8 @@ export default function Commands() {
         } catch {
             setData(prev => prev && { ...prev, commands: prev.commands.map(c => c.id === id ? cmd : c)});
             callToast("error", "Не удалось изменить статус на сервере", 3000);
+        } finally {
+            setTimeout(() => setIsFetching(false), 500);
         }
     };
 
@@ -129,7 +135,7 @@ export default function Commands() {
                         </label>
                         <label>Ответ: </label>
                         <textarea 
-                            className="textarea textarea-primary textarea- w-full md:w-1/2"
+                            className="textarea textarea-primary w-full md:w-1/2 "
                             placeholder="Текст ответа" 
                             value={newCommand?.response_text}
                             onChange={(e) => setNewCommand({

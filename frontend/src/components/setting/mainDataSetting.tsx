@@ -53,7 +53,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
                 <label className="block">
                 <span className="label-text">API токен (Bot Token)</span>
                 <input
-                    type="text"
+                    type="password"
                     className="input input-bordered w-full"
                     placeholder="123456:ABC-DEF..."
                     value={settings.token}
@@ -63,7 +63,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
                     <button
                     className="btn btn-sm btn-primary"
                     onClick={testToken}
-                    disabled={testing || !settings.token.trim()}
+                    disabled={testing || !settings.token?.trim()}
                     >
                     {testing ? "Тест..." : "Проверить токен"}
                     </button>
@@ -82,7 +82,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
                     type="text"
                     className="input input-bordered w-full"
                     placeholder="https://example.com/telegram/webhook"
-                    value={settings.config.webhookUrl}
+                    value={settings.config?.webhookUrl}
                     disabled={dev}
                     onChange={(e) => updateConfig("webhookUrl", e.target.value)}
                 />
@@ -98,7 +98,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
                     <input
                     type="text"
                     className="input input-bordered w-full"
-                    value={settings.config.commandPrefix}
+                    value={settings.config?.commandPrefix}
                     disabled={dev}
                     onChange={(e) => updateConfig("commandPrefix", e.target.value)}
                     />
@@ -109,7 +109,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
                     <input
                     type="number"
                     className="input input-bordered w-full"
-                    value={settings.config.maxMessageLength}
+                    value={settings.config?.maxMessageLength}
                     min={1}
                     onChange={(e) =>
                         updateConfig("maxMessageLength", Number(e.target.value))

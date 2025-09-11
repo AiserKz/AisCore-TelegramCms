@@ -79,7 +79,7 @@ export default function Home() {
                                 </tr>
                             </thead>
                             <tbody >
-                                {data?.bot.plugins.map((row) => (
+                                {data?.bot?.plugins.map((row) => (
                                     <tr key={row.plugin_id} className={`hover:bg-base-100 ${row.enabled ? "" : "opacity-50"}`}>
                                         <td>{row.plugin.name}</td>
                                         <td>

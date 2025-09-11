@@ -36,6 +36,7 @@ class Bot(db.Model):
     name = db.Column(db.String(80), unique=True, nullable=False)
     token = db.Column(db.String, nullable=False)
     config = db.Column(db.JSON, default={})
+    is_active = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

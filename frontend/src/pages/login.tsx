@@ -21,7 +21,10 @@ export default function Login() {
     }, []);
 
     const loging = async () => {
-        if (!username || !password) return;
+        if (!username || !password) {
+            setError('Введите логин и пароль');
+            return;
+        }
         setLoading(true);
         try {
             await handleLogin(username, password);

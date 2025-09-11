@@ -128,7 +128,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-> Для production рекомендуем контейнеризацию (Docker) и безопасное хранение токенов.
+> Docker в разработке...
 
 ---
 

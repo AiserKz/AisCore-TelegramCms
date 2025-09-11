@@ -1,5 +1,5 @@
 from app.models.plugins import Plugin
-from app.models.bot import BotPlugin, Bot
+from app.models.Bot import BotPlugin, Bot
 from flask import jsonify
 from app.core.database import db
 from app.crud.bot import new_plugin_bot
@@ -38,7 +38,7 @@ def add_new_plagin(botname: str, data: dict):
         "enabled": False
     })
 
-def toogle_plugin(botname: str, id: int):
+def toggle_plugin(botname: str, id: int):
     bot = Bot.query.filter_by(name=botname).first()
     if not bot:
         return jsonify({"error": "Бот не найден"}), 404
@@ -74,7 +74,7 @@ def del_plagin(plugin_name: str):
     plugin = db.session.query(Plugin).filter(Plugin.name == plugin_name).first()
     if not plugin:
         return jsonify({"error": "Плагин не найден"}), 404
-
+    
     db.session.delete(plugin)
     db.session.commit()
     return jsonify({"status": "ok"}), 200

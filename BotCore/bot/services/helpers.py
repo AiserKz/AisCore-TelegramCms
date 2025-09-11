@@ -1,5 +1,6 @@
 import os, aiohttp, tempfile
 from aiogram import types
+from .config import DOCKER
 
 async def download_file(url: str, tmpdir: str) -> str:
     """Скачать файл по ссылке и вернуть путь до временного файла"""
@@ -16,7 +17,10 @@ async def download_file(url: str, tmpdir: str) -> str:
 async def prepare_file(url: str, tmpdir: str) -> str:
     """Определяет, нужно ли качать файл, или можно отправить ссылку"""
     if "localhost" in url or "127.0.0.1" in url:
-       path = await download_file(url, tmpdir)
-       return types.FSInputFile(path)
+        if DOCKER:
+            url = url.replace("localhost:5000", "backend:5000")
+            url = url.replace("127.0.0.1:5000", "backend:5000")
+        path = await download_file(url, tmpdir)
+        return types.FSInputFile(path)
     return url
 

@@ -1,9 +1,0 @@
-{
-    "name": "Translate",
-    "version": "1.0.0",
-    "description": "Плагин для перевода текста на другой язык.",
-    "author": "Aiser",
-    "dependencies": [
-        "googletrans>=4.0.2"
-    ]
-}

@@ -38,7 +38,7 @@ export default function Sender() {
 
   const blocking = (images.length > 0 ? 1 : 0) + (video.length > 0 ? 1 : 0) + (documents.length > 0 ? 1 : 0) + (allFiles.length > 0 ? 1 : 0) > 1
 
-  // Новый: состояние поиска в модалке
+
   const [searchQuery, setSearchQuery] = useState<string>("");
 
 
@@ -194,7 +194,7 @@ export default function Sender() {
               />
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto md:overflow-hidden">
               <span className="mb-2 block text-sm font-medium">Медиафайлы</span>
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <input type="file" id="fileInputImage" onChange={uploadFile} hidden accept="image/*" />

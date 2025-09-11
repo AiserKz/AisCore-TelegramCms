@@ -7,11 +7,12 @@ from app.core.database import db
 from app.routes.bot import reload_bot
 from flask import request, jsonify
 from app.models.commands import Command
-from app.models.bot import Bot
+from app.models.Bot import Bot
 from app.models.user import TelegramUser
 from app.models.plugins import Plugin
 from app.models.media import Media
 from app.crud.upload import download_file
+from app.crud.bot import start_bot
 from flask_jwt_extended import jwt_required
 
 @api_bp.route("/main-data/<botname>", methods=["GET"])
@@ -21,17 +22,19 @@ def get_main_data(botname: str):
     bot = db.session.query(Bot).filter(Bot.name == botname).first()
     commands = db.session.query(Command).all()
     users = db.session.query(TelegramUser).all()
+
     total_count = {
         "users": len(users),
         "commands": len(commands),
         "plugins": len(plugins)
     }
+
     return jsonify({
         "total_count": total_count,
         "plugins": [p.to_dict() for p in plugins],
         "commands": [c.to_dict() for c in commands],
         "users": [u.to_dict() for u in users],
-        "bot": bot.to_dict()
+        "bot": bot.to_dict() if bot and hasattr(bot, "to_dict") else None
     })
     
 
@@ -92,3 +95,28 @@ def set_bot_config():
     db.session.commit()
     return jsonify({"message": "Конфигурация бота успешно обновлена"}), 200
 
+
+
+@api_bp.route("/startbot/<botname>", methods=["POST"])
+@jwt_required()
+def startBot(botname: str):
+    bot = db.session.query(Bot).filter(Bot.name == botname).first()
+    if not bot:
+        return jsonify({"error": "Бот не найден"}), 200
+    
+    Bot.query.update({Bot.is_active: False})
+    db.session.commit()
+    bot.is_active = True
+    db.session.commit()
+    
+    return start_bot(botname)
+
+@api_bp.route("/stopbot/<botname>", methods=["POST"])
+@jwt_required()
+def stopBot(botname: str):
+    bot = db.session.query(Bot).filter(Bot.name == botname).first()
+    if not bot:
+        return jsonify({"error": "Бот не найден"}), 200
+    bot.is_active = False
+    db.session.commit()
+    return jsonify({"status": "ok"}), 200

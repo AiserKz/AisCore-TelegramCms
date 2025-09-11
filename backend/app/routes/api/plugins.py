@@ -2,15 +2,16 @@ from . import api_bp
 from flask import request, jsonify
 from app.core.database import db
 from app.models.plugins import Plugin
-from app.models.bot import Bot
+from app.models.Bot import Bot
 from flask_jwt_extended import jwt_required
 from app.crud.bot import get_bot_options, set_bot_options
 from app.crud.plugins import new_plugin
-from app.crud.plugins import toogle_plugin, add_new_plagin, del_plagin, get_plugins
+from app.crud.plugins import toggle_plugin, add_new_plagin, del_plagin, get_plugins
 
 @api_bp.route("/plugins", methods=["GET"])
 @jwt_required()
 def plagins():
+    
     return get_plugins()
 
 @api_bp.route("/plugins/<plugin_name>", methods=["DELETE"])
@@ -21,7 +22,7 @@ def delete_plugin(plugin_name: str):
 @api_bp.route("/plugins/<botname>/<int:id>/toggle", methods=["PUT"])
 @jwt_required()
 def toggle(botname: str, id: int):
-    return toogle_plugin(botname, id)
+    return toggle_plugin(botname, id)
 
     
 @api_bp.route("/plugins/<botname>/add", methods=["POST"])

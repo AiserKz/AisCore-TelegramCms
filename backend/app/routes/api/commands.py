@@ -31,14 +31,20 @@ def delete_command():
         return jsonify({"message": "Команда успешно удалена"}), 200
     return jsonify({"error": "Команда не найдена"}), 404
 
+
 @api_bp.route("/commands/<id>/toggle", methods=["PUT"])
 @jwt_required()
 def toggle_command(id):
     cmd = db.session.query(Command).filter_by(id=id).first()
     if cmd:
-        cmd.enabled = not cmd.enabled
-        db.session.commit()
-        return jsonify({"message": "Статус команды успешно изменен"}), 200
+        try:
+            cmd.enabled = not cmd.enabled
+            db.session.commit()
+            return jsonify({"message": "Статус команды успешно изменен"}), 200
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error toggling command status: {e}")
+            return jsonify({"error": "Не удалось изменить статус на сервере"}), 500 
     return jsonify({"error": "Команда не найдена"}), 404
 
 @api_bp.route("/commands/<id>", methods=["PUT"])

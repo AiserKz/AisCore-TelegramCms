@@ -46,14 +46,15 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const [authLoading, setAuthLoading] = useState<boolean>(true);
 
 
+
     const handleLogin = async (username: string, password: string) => {
         const data: TokenType = await login(username, password);
         if (data) {
             localStorage.setItem("access_token", data.access_token);
             localStorage.setItem("refresh_token", data.refresh_token);
             const res = await api.get("/auth/profile");
-            console.log(res.data.user);
             setUser(res.data.user);
+            fetchData();
         } else {
             callToast("error", "Неправильный логин или пароль");
         }
@@ -62,22 +63,26 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const logout = () => {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
+        localStorage.removeItem("bot_settings_v1");
         setUser(undefined);
     }
 
+    const fetchData = async () => {
+        const res = await api.get(`/api/main-data/${botSetting.name}`);
+        setData(res.data);
+        setLoading(false);
+        setTimeout(() => isFirstLoad.current = false, 1000);
+    }
     useEffect(() => {
         setAuthLoading(true);
         const token = localStorage.getItem("access_token");
         if (token) {
             const res = api.get("/auth/profile");
             res.then(res => setUser(res.data.user)).finally(() => setAuthLoading(false));
+        } else {
+            setAuthLoading(false);
         }
-        const fetchData = async () => {
-            const res = await api.get(`/api/main-data/${botSetting.name}`);
-            setData(res.data);
-            setLoading(false);
-            setTimeout(() => isFirstLoad.current = false, 1000);
-        }
+
         if (token) {
             fetchData();  
         }

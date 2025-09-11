@@ -4,19 +4,25 @@ import { Link, useLocation } from "react-router-dom";
 import { useAppContext } from "../layout/AppLayout";
 import { SaveBtn } from "./saveBtn";
 import { checkPage, navItems } from "../data/navBarItemsData";
+import StartBotBtn from "./startBotBtn";
 
 const logoutItem = { name: "Выйти", icon: ArrowLeftEndOnRectangleIcon, href: "#" };
 
 
 export default function LeftBar() {
+    const context = useAppContext();
+    const { user, logout, botRebut, versionApp, botSetting } = context;
     const [opened, setOpened] = useState(localStorage.getItem("opened") === "true" ? true : false);
     const location = useLocation();
     const [currentPage, setCurrentPage] = useState<number>(checkPage());
     useEffect(() => {
         setCurrentPage(checkPage());
+       
+        if (!botSetting.name && user && location.pathname !== "/settings") {
+            window.location.href = "/settings";
+        }
+    
     }, [location]);
-    const context = useAppContext();
-    const { user, logout, botRebut, versionApp } = context;
 
     return (
         <div
@@ -61,7 +67,7 @@ export default function LeftBar() {
                         >
                             <item.icon className="h-7 w-7 text-base-content shrink-0" />
                             <span
-                                className={`text-md font-medium text-base-content ml-10 duration-300 absolute transition-opacity ease-out ${
+                                className={`text-md font-medium text-base-content ml-10 duration-300 absolute transition-opacity ease-out truncate ${
                                     opened ? "opacity-100" : "opacity-0 "
                                 }`}
                                 style={{ pointerEvents: opened ? "auto" : "none" }}
@@ -72,7 +78,7 @@ export default function LeftBar() {
                     ))}
                 </nav>
                 {botRebut && <SaveBtn absolute={false}  opened={opened}/>}
-                
+                <StartBotBtn isOpen={opened} />
             </div>
             <div className="border-t border-base-200 p-4 ">
                 <div className="flex items-center rounded-md px-2 py-2 hover:bg-base-200 justify-start">

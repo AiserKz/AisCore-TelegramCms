@@ -14,7 +14,7 @@ export default function MediaRender({ images, video, documents, allFiles, delete
     return (
         <div>
             <h2 className="my-4 text-lg font-bold">Медиафайлы</h2>
-            <div className="grid grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                 {images.map((image, index) => (
                 <div
                     key={index}

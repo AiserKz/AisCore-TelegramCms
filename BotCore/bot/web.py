@@ -1,13 +1,14 @@
-import tempfile, zipfile, requests, io, aiohttp
+import tempfile, zipfile, requests, io, aiohttp, time, asyncio
 from aiohttp import web
 from aiogram.types import InputMediaPhoto
 from .plugin_loader import reload_bot_plugins
 from .services.helpers import prepare_file
 from importlib import import_module
-from .services.config import API_URL
+from .services.config import API_URL, DOCKER
+
+PLUGIN_DIR = '/bot/bot/plugins' if DOCKER else 'bot/plugins'
 
 
-PLUGIN_DIR = "bot/plugins"
 
 # ================== HTTP API для админки ==================
 async def handle_reload(request):
@@ -115,6 +116,10 @@ async def handle_dowload(request):
     if not url:
         return web.json_response({"status": "error", "message": "url не передан"}, status=400)
     
+    if DOCKER:
+        url = url.replace("localhost:5000", "backend:5000")
+        url = url.replace("127.0.0.1:5000", "backend:5000")
+    
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url=url) as resp:
@@ -132,17 +137,36 @@ async def handle_dowload(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-def bot_init():
-    res = requests.post(API_URL + "/init-bot")
-    print(res.json())
-    return res.json()
+def bot_init(retries=3, delay=3):
+    for i in range(retries):
+        try:
+            res = requests.post(API_URL + "/init-bot", timeout=5)
+            res.raise_for_status()
+            data = res.json()
+            if not data or "bot_token" not in data:
+                print(f"[BOT] Конфиг пустой, жду {delay} сек...")
+            else:
+                print(f"[BOT] Получены данные бота: {data['bot_name']}")
+                return data
+        except Exception as e:
+            print(f"[BOT] Попытка {i+1}/3 не удалась: {e}")
+            time.sleep(delay)
+    return None
 
+async def handle_start(request: web.Request):
+    from .main import start_bot, is_Run
+    bot_name = request.match_info.get("bot_name")
+    print(f"[WEB] Запрос на запуск бота: {bot_name}")
+    if is_Run:
+        return web.json_response({"status": "error", "message": "Бот уже запущен"})
+
+    asyncio.create_task(start_bot()) 
+    return web.json_response({"status": "ok", "message": f"Бот {bot_name} запускается..."})
 
 def setup_web_server():
-
     app = web.Application()
+    app.router.add_post("/start/{bot_name}", handle_start)
     app.router.add_post("/reload/{bot_name}", handle_reload)
-    # app.router.add_post("/reload/{bot_name}", restart_bot)
     app.router.add_post("/broadcast", handler_broadcast)
     app.router.add_get("/plugins/config/{plugin_name}", handle_get_plugin)
     app.router.add_put("/plugins/config/{plugin_name}", handle_set_plugin)

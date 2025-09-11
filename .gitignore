@@ -187,3 +187,4 @@ cython_debug/
 # *.mp3
 *static/
 .vscode
+BotCore/bot/plugins/*

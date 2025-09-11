@@ -23,6 +23,7 @@ export default function Plagins() {
 	const [pluginFields, setPluginFields] = useState<any[] | null>(null);
 
 	const [showShop, setshowShop] = useState<boolean>(false);
+	const [isFetching, setIsFetching] = useState<boolean>(false);
 
     const getInstalledPlugins = () => {
 		if (!data) return [];
@@ -46,12 +47,13 @@ export default function Plagins() {
 	// const installedPlugins = getInstalledPlugins();
 
 	const handleToggle = async (plugin_id: number) => {
-		// работаем с записью из data.bot.plugins по plugin_id
+		if (isFetching) return;
 		const bp = data?.bot?.plugins.find((p: any) => Number(p.plugin_id) === Number(plugin_id));
 		if (!bp) return;
+
+		setIsFetching(true);
 		const updated = { ...bp, enabled: !bp.enabled };
 
-		// оптимистично обновляем только bot.plugins
 		setData(prev => {
 			if (!prev) return prev;
 			const botPlugins = prev.bot.plugins.map((p: any) => p.plugin_id === bp.plugin_id ? updated : p);
@@ -69,6 +71,8 @@ export default function Plagins() {
 				return { ...prev, bot: { ...prev.bot, plugins: botPlugins } };
 			});
 			callToast("error", "Не удалось изменить статус на сервере", 3000);
+		} finally {
+			setTimeout(() => setIsFetching(false), 500);
 		}
 	};
 
