@@ -70,3 +70,83 @@ def install_plugin():
         return jsonify({"error": "Название плагина не указано и/или URL"}), 400
     
     return new_plugin(data)
+
+
+pluginData = [
+    {
+        "id": 5,
+        "name": "Echo",
+        "enabled": False,
+        "description": "Простой плагин-эхо: повторяет сообщение пользователя.",
+        "price": 0,
+        "version": "1.0.0",
+        "author": "Aiser",
+        "license": "Ais",
+        "url": "https://aisblack.ru/static/plugins/Echo.zip",
+        "poster": "https://interesnyefakty.org/wp-content/uploads/chto-takoe-plagin.jpg"
+    },
+    {
+        "id": 6,
+        "name": "Welcome",
+        "enabled": False,
+        "description": "Отправляет приветственное сообщение новым пользователям.",
+        "price": 199,
+        "version": "1.2.0",
+        "author": "Aiser",
+        "license": "Ais",
+        "url": "https://aisblack.ru/static/plugins/Welcome.zip",
+        "poster": "https://content.timeweb.com/assets/65c70e62-4ae9-48bc-92ff-7886de5f50fa.jpg?width=3080&height=1600"
+    },
+    {
+        "id": 11,
+        "name": "Calculator",
+        "enabled": False,
+        "description": "Калькулятор.",
+        "price": 0,
+        "version": "1.0.2",
+        "author": "Aiser",
+        "license": "Ais",
+        "url": "https://aisblack.ru/static/plugins/Calculator.zip",
+        "poster": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4msaMIrvPeFegjYbfOVjSWO5jEmnQQKKqvQ&s"
+    },
+    {
+        "id": 9,
+        "name": "Weather",
+        "enabled": False,
+        "description": "Показывает погоду.",
+        "price": 0,
+        "version": "1.0.2",
+        "author": "Aiser",
+        "license": "Ais",
+        "url": "https://aisblack.ru/static/plugins/Weather.zip",
+        "poster": "https://img.freepik.com/premium-vector/weather-logo-gradient-vector-icon-illustration_269830-2064.jpg"
+    },
+    {
+        "id": 10,
+        "name": "WebAppButton",
+        "enabled": False,
+        "description": "Веб-приложение Кнопка рядом с полем ввода.",
+        "price": 0,
+        "version": "1.0.2",
+        "author": "Aiser",
+        "license": "Ais",
+        "url": "https://aisblack.ru/static/plugins/WebAppButton.zip",
+        "poster": "https://habrastorage.org/getpro/habr/upload_files/159/0bf/7f2/1590bf7f2c9295f7934da9b760d8696e.jpeg"
+    },
+    {
+        "id": 7,
+        "name": "Translate",
+        "enabled": False,
+        "description": "Переводит сообщение в другую локаль.",
+        "price": 299,
+        "version": "1.0.0",
+        "author": "Aiser",
+        "license": "Ais",
+        "url": "https://aisblack.ru/static/plugins/Translate.zip",
+        "poster": "https://translations.telegram.org/img/translations/lang_banner.png?1"
+    }
+]
+
+@api_bp.route("/plugins/store", methods=["GET"])
+def get_plugins_store():
+    return jsonify(pluginData), 200

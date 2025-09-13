@@ -37,6 +37,7 @@ def new_plugin_bot(url):
     
 def start_bot(name):
     try:
+        print("Запускаю бота ", BOT_CONTROL_URL, name)
         resp = requests.post(f"{BOT_CONTROL_URL}/start/{name}")
         return resp.json()
     except requests.exceptions.JSONDecodeError:

@@ -1,6 +1,6 @@
 import tempfile, zipfile, requests, io, aiohttp, time, asyncio
 from aiohttp import web
-from aiogram.types import InputMediaPhoto
+from aiogram.types import InputMediaPhoto, InputMediaVideo
 from .plugin_loader import reload_bot_plugins
 from .services.helpers import prepare_file
 from importlib import import_module
@@ -54,7 +54,7 @@ async def handler_broadcast(request):
                         idx += 1
                         file = await prepare_file(vid, tmpdir)
                         media.append(
-                            InputMediaPhoto(media=file, caption=text if idx == 1 and text else None)
+                            InputMediaVideo(media=file, caption=text if idx == 1 and text else None)
                         )
                     await bot.send_media_group(uid, media=media)
                 # 2. Одиночное фото
@@ -76,6 +76,7 @@ async def handler_broadcast(request):
                     await bot.send_message(uid, text=text)
                 
             except Exception as e:
+                print(videos, images, documents)
                 print(f"[BOT] Ошибка отправки {uid}: {e}")
 
     return web.json_response({"status": "ok", "message": f"Рассылка {len(chat_ids)} юзерам выполнена"})
@@ -117,8 +118,8 @@ async def handle_dowload(request):
         return web.json_response({"status": "error", "message": "url не передан"}, status=400)
     
     if DOCKER:
-        url = url.replace("localhost:5000", "backend:5000")
-        url = url.replace("127.0.0.1:5000", "backend:5000")
+        url = url.replace("localhost:5002", "backend:5002")
+        url = url.replace("127.0.0.1:5002", "backend:5002")
     
     try:
         async with aiohttp.ClientSession() as session:

@@ -90,7 +90,7 @@ AisCore разделён на три уровня:
 
 - Python: Aiogram, aiohttp, Flask, SQLAlchemy
 - JavaScript: React, Vite, TypeScript
-- БД: SQLite (или MySQL)
+- БД: SQLite (или PostgreSQL, если в Docker)
 - DevOps: Docker (опционально)
 - Архитектура: асинхронность, динамический импорт, hot‑reload
 

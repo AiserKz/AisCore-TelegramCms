@@ -56,9 +56,9 @@ async def main():
     """Главный цикл контейнера"""
     runner = web.AppRunner(setup_web_server())
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8081)
+    site = web.TCPSite(runner, "0.0.0.0", 8082)
     await site.start()
-    print("[BOT] API запущен на http://0.0.0.0:8081")
+    print("[BOT] API запущен на http://0.0.0.0:8082")
 
     while True:
         await asyncio.sleep(5)

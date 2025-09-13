@@ -188,3 +188,4 @@ cython_debug/
 *static/
 .vscode
 BotCore/bot/plugins/*
+DockerServer/*

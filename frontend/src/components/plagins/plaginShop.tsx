@@ -3,7 +3,6 @@ import { XMarkIcon } from "@heroicons/react/24/outline"
 import { useAppContext } from "../../layout/AppLayout"
 import api from "../../script/apiFetch"
 import type { PluginType } from "../../interface/types"
-import pluginsTestData from "../../data/pluginTestData"
 
 interface PlagineStoreProps {
     showShop: boolean
@@ -22,8 +21,9 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
         if ( !showShop ) return
         setLoading(true)
         // фейковый запрос к бд
+        api.get("/api/plugins/store").then(res => {if (res.status === 200) setItems(res.data)})
         const t = setTimeout(() => {
-            setItems(pluginsTestData)
+       
             setLoading(false)
         }, 700)
         return () => clearTimeout(t)

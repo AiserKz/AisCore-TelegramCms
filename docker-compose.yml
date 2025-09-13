@@ -7,12 +7,12 @@ services:
     depends_on:
       - db
     ports: 
-      - "5000:5000"
+      - "5002:5002"
     environment:
       - JWT_SECRET_KEY=aidwkprkqpdkw924314
-      - BOT_CONTROL_URL=http://bot:8081
-      - BASE_URL=http://backend:5000
-      - STATIC_URL=http://localhost:5000
+      - BOT_CONTROL_URL=http://bot:8082
+      - BASE_URL=http://backend:5002
+      - STATIC_URL=http://localhost:5002
       - DEBUG=True
       - DOCKER=True
     volumes:
@@ -25,9 +25,9 @@ services:
     depends_on:
       - backend
     ports:
-      - "8081:8081"
+      - "8082:8082"
     environment:
-      - API_URL=http://backend:5000/bot
+      - API_URL=http://backend:5002/bot
       - DEBUG=True
       - DOCKER=True
       - PYTHONUNBUFFERED=1
@@ -38,8 +38,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    environment:
+      - VITE_BACKEND_API_URL=http://localhost:5002
     ports:
-      - "3000:3000"
+      - "3002:3002"
 
 
   db:
@@ -52,15 +54,6 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 40
-    ports:
-      - "8080:80"
 
 
 volumes:

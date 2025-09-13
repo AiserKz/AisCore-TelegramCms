@@ -41,7 +41,11 @@ def get_main_data(botname: str):
 @api_bp.route("/reload/<botname>", methods=["POST"])
 @jwt_required()
 def reload(botname: str):
-    return reload_bot(botname)
+    bot = db.session.query(Bot).filter(Bot.name == botname).first()
+    if bot and bot.is_active:
+        return reload_bot(botname)
+    else:
+        return jsonify({"error": "Бот не активен"}), 400
 
 
 @api_bp.route("/upload", methods=["POST"])

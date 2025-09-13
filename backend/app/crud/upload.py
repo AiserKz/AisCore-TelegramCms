@@ -1,5 +1,5 @@
 import os
-from app.core.config import STATIC_FOLDER
+from app.core.config import STATIC_FOLDER, STATIC_URL
 from app.utils.file import secure_filename
 
 
@@ -13,7 +13,7 @@ def download_file(file, types: str = "all"):
         
     file.save(path)
     filesize = os.path.getsize(path) // 1024
-    url = f"http://localhost:5000/{path}"
+    url = f"{STATIC_URL}/{path}"
     return url, path.replace("\\", "/"), filesize
 
 
