@@ -13,6 +13,8 @@ STATIC_URL = os.getenv('STATIC_URL')
 DEBUG = os.getenv('DEBUG', "False").lower() in ('true', '1')
 DOCKER = os.getenv('DOCKER', "False").lower() in ('true', '1')
 
+BOT_COUNT = os.getenv('BOT_COUNT', 5)
+
 JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=30)
 JWT_REFRESH_TOKEN_EXPIRES = datetime.timedelta(days=30)
 

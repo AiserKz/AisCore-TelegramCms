@@ -3,6 +3,7 @@ from app.models.Bot import BotPlugin, Bot
 from flask import jsonify
 from app.core.database import db
 from app.crud.bot import new_plugin_bot
+from sqlalchemy.sql import exists
 
 
 def get_plugins():
@@ -28,7 +29,7 @@ def add_new_plagin(botname: str, data: dict):
     if bp:
         return jsonify({"error": "Плагин уже добавлен"}), 400
     
-    new_plugin_bot(plugin.url)
+    new_plugin_bot(plugin.download_link)
     bp = BotPlugin(bot_id=bot.id, plugin_id=plugin.id, enabled=False)
     db.session.add(bp)
     db.session.commit()
@@ -70,11 +71,26 @@ def toggle_plugin(botname: str, id: int):
         })
 
 
-def del_plagin(plugin_name: str):
+def del_plugin(plugin_name: str):
     plugin = db.session.query(Plugin).filter(Plugin.name == plugin_name).first()
     if not plugin:
         return jsonify({"error": "Плагин не найден"}), 404
-    
-    db.session.delete(plugin)
-    db.session.commit()
-    return jsonify({"status": "ok"}), 200
+
+    plugin_in_use = db.session.query(
+        exists().where(BotPlugin.plugin_id == plugin.id) # type: ignore
+    ).scalar()
+
+
+    if plugin_in_use:
+        return jsonify({
+            "error": "Невозможно удалить плагин",
+            "message": "Плагин используется хотя бы одним ботом"
+        }), 400
+
+    try:
+        db.session.delete(plugin)
+        db.session.commit()
+        return jsonify({"status": "ok"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500

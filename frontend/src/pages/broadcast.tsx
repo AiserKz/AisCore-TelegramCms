@@ -19,7 +19,7 @@ import useTitle from "../script/useTitle";
 export default function Sender() {
   useTitle("Рассылка");
   const context = useAppContext();
-  const { data, callToast } = context;
+  const { data, callToast, botSetting } = context;
 
   const [message, setMessage] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -38,11 +38,14 @@ export default function Sender() {
 
   const blocking = (images.length > 0 ? 1 : 0) + (video.length > 0 ? 1 : 0) + (documents.length > 0 ? 1 : 0) + (allFiles.length > 0 ? 1 : 0) > 1
 
-
   const [searchQuery, setSearchQuery] = useState<string>("");
 
 
   const sendToUsers = async () => {
+    if (!botSetting) {
+      callToast("error", "Бот не выбран", 5000);
+      return;
+    }
     const docs = [...documents, ...allFiles];
     const payload = {
       to: audience === "all" ?
@@ -56,8 +59,7 @@ export default function Sender() {
       video,
       docs 
     };
-    await api.post("/bot/broadcast", payload);
-    // Сброс формы
+    await api.post(`/api/broadcast/${botSetting.name}`, payload);
     setMessage("");
     setSelectedIds([]);
     setIsModalOpen(false);
@@ -68,7 +70,6 @@ export default function Sender() {
     setDocuments([]);
     setAllFiles([]);
     callToast("success", "Рассылка отправлена", 5000);
-    // Здесь можно показать уведомление об успехе
   };        
 
   const uploadFile = async (e: any) => {
@@ -179,10 +180,10 @@ export default function Sender() {
       <div className="container mx-auto py-8">
         <HeaderPageTitle title="Рассылка" />
 
-        <div>
+        <div className="mb-8 ">
           <h2 className="mb-6 text-3xl font-bold">Создание рассылки</h2>
 
-          <div className="space-y-8">
+          <div className="space-y-8 shadow-md p-6 rounded bg-base-100">
             <div>
               <label className="mb-2 block text-sm font-medium">Сообщение</label>
               <textarea

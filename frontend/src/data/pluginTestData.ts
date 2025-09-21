@@ -10,7 +10,7 @@ const pluginsTestData: PluginType[] = [
         version: "1.0.0",
         author: "Aiser",
         license: "Ais",
-        url: "http://localhost:5000/static/uploads/plugins/Echo.zip",
+        download_link: "http://localhost:5000/static/uploads/plugins/Echo.zip",
         poster: "https://interesnyefakty.org/wp-content/uploads/chto-takoe-plagin.jpg"
     },
     {
@@ -22,7 +22,7 @@ const pluginsTestData: PluginType[] = [
         version: "1.2.0",
         author: "Aiser",
         license: "Ais",
-        url: "http://localhost:5000/static/uploads/plugins/Welcome.zip",
+        download_link: "http://localhost:5000/static/uploads/plugins/Welcome.zip",
         poster: "https://content.timeweb.com/assets/65c70e62-4ae9-48bc-92ff-7886de5f50fa.jpg?width=3080&height=1600"
     },
     {
@@ -34,7 +34,7 @@ const pluginsTestData: PluginType[] = [
         version: "1.0.2",
         author: "Aiser",
         license: "Ais",
-        url: "http://localhost:5000/static/uploads/plugins/Calculator.zip",
+        download_link: "http://localhost:5000/static/uploads/plugins/Calculator.zip",
         poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT4msaMIrvPeFegjYbfOVjSWO5jEmnQQKKqvQ&s"
     },
     {
@@ -46,7 +46,7 @@ const pluginsTestData: PluginType[] = [
         version: "1.0.2",
         author: "Aiser",
         license: "Ais",
-        url: "http://localhost:5000/static/uploads/plugins/Weather.zip",
+        download_link: "http://localhost:5000/static/uploads/plugins/Weather.zip",
         poster: "https://img.freepik.com/premium-vector/weather-logo-gradient-vector-icon-illustration_269830-2064.jpg"
     },
     {
@@ -58,7 +58,7 @@ const pluginsTestData: PluginType[] = [
         version: "1.0.2",
         author: "Aiser",
         license: "Ais",
-        url: "http://localhost:5000/static/uploads/plugins/WebAppButton.zip",
+        download_link: "http://localhost:5000/static/uploads/plugins/WebAppButton.zip",
         poster: "https://habrastorage.org/getpro/habr/upload_files/159/0bf/7f2/1590bf7f2c9295f7934da9b760d8696e.jpeg"
     },
     {
@@ -70,7 +70,7 @@ const pluginsTestData: PluginType[] = [
         version: "1.0.0",
         author: "Aiser",
         license: "Ais",
-        url: "http://localhost:5000/static/uploads/plugins/Translate.zip",
+        download_link: "http://localhost:5000/static/uploads/plugins/Translate.zip",
         poster: "https://translations.telegram.org/img/translations/lang_banner.png?1"
     },
     // {

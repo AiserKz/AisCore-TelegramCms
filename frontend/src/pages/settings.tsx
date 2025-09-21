@@ -21,6 +21,7 @@ const DEFAULTS: SettingsState = {
 };
 
 const DEFAULT_SETTINGS: BotSetting = {
+  id: 0,
   name: "",
   token: "",
   config: DEFAULTS,
@@ -98,7 +99,7 @@ export default function Settings() {
       localStorage.setItem("bot_settings_v1", JSON.stringify(settingsToStore));
       setStatus("Настройки сохранены");
 
-      await api.post("/api/bot/config", settingsToStore);
+      await api.put(`/api/bot/config/${botSetting?.name}`, settingsToStore);
 
       setSettings(settingsToStore);
       setTimeout(() => setStatus(null), 2500);
@@ -127,7 +128,7 @@ export default function Settings() {
 
           <MainDataSetting settings={settings} updateTop={updateTop} updateConfig={updateConfig} dev={dev} setStatus={setStatus} />
 
-          <div className="card bg-base-200 p-4 shadow">
+          <div className="card bg-base-100 p-4 shadow">
             <h3 className="text-lg font-bold mb-2">Локализация и время</h3>
             <div className="grid grid-cols-1 gap-3">
               <label>
@@ -176,7 +177,7 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="card bg-base-200 p-4 shadow">
+          <div className="card bg-base-100 p-4 shadow">
             <h3 className="text-lg font-bold mb-2">Дополнительно</h3>
             <div className="grid grid-cols-1 gap-3">
               <label className="flex items-center justify-between gap-4">

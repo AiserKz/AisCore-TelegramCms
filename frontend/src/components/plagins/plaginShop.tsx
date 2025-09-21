@@ -18,15 +18,22 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
     const [installing, setInstalling] = useState<string | number | null>(null)
 
     useEffect(() => {
-        if ( !showShop ) return
-        setLoading(true)
-        // фейковый запрос к бд
-        api.get("/api/plugins/store").then(res => {if (res.status === 200) setItems(res.data)})
-        const t = setTimeout(() => {
-       
-            setLoading(false)
-        }, 700)
-        return () => clearTimeout(t)
+        const fetchPluginsShop = async () => {
+            if ( !showShop ) return
+            setLoading(true)
+            const res = await fetch("https://api.aisblack.ru/plugins/?limit=20", { headers: { "Content-Type": "application/json" } });
+            
+            if (res.status !== 200) return
+            const data = await res.json()
+            setItems(data)
+
+            const t = setTimeout(() => {
+                setLoading(false)
+            }, 700)
+
+            return () => clearTimeout(t)
+        }
+        fetchPluginsShop()
     }, [showShop])
 
     const filtered = items.filter((it) =>
@@ -41,11 +48,11 @@ export default function PlagineStore( { showShop, setshowShop, installedPlugins 
             if (!prev) return prev;
             return { ...prev, plugins: [...prev.plugins, pkg] }
         })
-        // симуляция установки
+
         setTimeout(() => {
             setInstalling(null)
             callToast("success", `Плагин ${pkg.name} установлен`, 3000)
-            // не закрываем автоматически, но можно: setshowShop(false)
+
         }, 900)
     }
 

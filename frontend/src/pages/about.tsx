@@ -10,13 +10,13 @@ export default function About() {
                 <HeaderPageTitle title="О проекте" />
 
                 <div className="space-y-6">
-                    <div className="card bg-base-200 p-6 shadow-lg">
+                    <div className="card bg-base-100 p-6 shadow-lg">
                         <h2 className="text-2xl font-bold mb-2">AisCore — CMS для Telegram-ботов</h2>
                         <p className="text-base-content/70">AisCore — это CMS-платформа для Telegram-ботов, вдохновлённая WordPress. Она позволяет создавать и управлять ботами без программирования через удобную веб-панель. Идея проекта — «Бот за 5 минут»: выбери плагины, включи модули и получи работающего помощника.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="card bg-base-200 p-4 shadow-md">
+                        <div className="card bg-base-100 p-4 shadow-md">
                             <h3 className="font-semibold mb-3">Основные возможности</h3>
                             <ul className="space-y-3 text-sm">
                                 <li>🧩 <b>Система плагинов</b> — установка, активация и перезагрузка плагинов без рестарта бота.</li>
@@ -28,7 +28,7 @@ export default function About() {
                             </ul>
                         </div>
 
-                        <div className="card bg-base-200 p-4 shadow-md">
+                        <div className="card bg-base-100 p-4 shadow-md">
                             <h3 className="font-semibold mb-3">Базовые плагины</h3>
                             <ul className="space-y-3 text-sm">
                                 <li>🌍 <b>Переводчик текста</b></li>
@@ -39,7 +39,7 @@ export default function About() {
                         </div>
                     </div>
 
-                    <div className="card bg-base-200 p-4 shadow-md">
+                    <div className="card bg-base-100 p-4 shadow-md">
                         <h3 className="font-semibold mb-3">Архитектура проекта</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div>
@@ -58,7 +58,7 @@ export default function About() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="card bg-base-200 p-4 shadow-md">
+                        <div className="card bg-base-100 p-4 shadow-md">
                             <h3 className="font-semibold mb-3">Технологии</h3>
                             <ul className="text-sm space-y-2 text-base-content/70">
                                 <li>Python: Aiogram, aiohttp, Flask / FastAPI</li>
@@ -68,7 +68,7 @@ export default function About() {
                             </ul>
                         </div>
 
-                        <div className="card bg-base-200 p-4 shadow-md">
+                        <div className="card bg-base-100 p-4 shadow-md">
                             <h3 className="font-semibold mb-3">Планы развития</h3>
                             <ul className="text-sm space-y-2 text-base-content/70">
                                 <li>Поддержка мультиботов (несколько ботов в одной панели)</li>
@@ -79,7 +79,7 @@ export default function About() {
                         </div>
                     </div>
 
-                    <div className="card bg-base-200 p-4 shadow-md">
+                    <div className="card bg-base-100 p-4 shadow-md">
                         <h3 className="font-semibold mb-3">Миссия проекта</h3>
                         <p className="text-base-content/70">Сделать запуск Telegram‑бота простым и доступным для каждого — так же, как WordPress сделал создание сайтов. Наша цель — дать инструмент для бизнеса, сообществ и разработчиков, чтобы они могли быстро и надёжно запускать полезных ботов.</p>
                     </div>

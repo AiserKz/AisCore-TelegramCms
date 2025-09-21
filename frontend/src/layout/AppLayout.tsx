@@ -4,6 +4,10 @@ import Toast from "../components/toast";
 import type { UserType, ToastType, MainDataType, BotSetting } from "../interface/types";
 import { login } from "../script/api";
 import api from "../script/apiFetch";
+import BotSelect from "../pages/botSelect";
+import Login from "../pages/login";
+import versionApp from "../data/version";
+import ManualPage from "../pages/manual";
 
 type AppLayoutProviderProps = {
     children: React.ReactNode;
@@ -21,7 +25,7 @@ type AppLayoutContext = {
     handleLogin: (username: string, password: string) => void;
     callToast: (status: "info" | "success" | "error", message: string, duration?: number) => ToastType;
     logout: () => void;
-    botSetting: BotSetting;
+    botSetting: BotSetting | null;
     authLoading: boolean;
     versionApp: string
 }
@@ -33,8 +37,6 @@ type TokenType = {
     refresh_token: string;
 }
 
-const versionApp = "v1.0";
-
 export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const [theme, setTheme] = useState("light");
     const [user, setUser] = useState<UserType>();
@@ -42,10 +44,10 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [botRebut, setBotReboat] = useState<boolean>(false);
     const isFirstLoad = useRef(true);
-    const [botSetting] = useState<BotSetting>(localStorage.getItem("bot_settings_v1") ? JSON.parse(localStorage.getItem("bot_settings_v1") as string) : {});
+    const [botSetting, setBotSetting] = useState<BotSetting | null>(localStorage.getItem("bot_settings_v1") ? JSON.parse(localStorage.getItem("bot_settings_v1") as string) : null);
     const [authLoading, setAuthLoading] = useState<boolean>(true);
 
-
+    const [isManual, setIsManual] = useState<boolean>(localStorage.getItem("isManual") === "false" ? false : true);
 
     const handleLogin = async (username: string, password: string) => {
         const data: TokenType = await login(username, password);
@@ -64,15 +66,18 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("bot_settings_v1");
+        setBotSetting(null);
         setUser(undefined);
     }
 
     const fetchData = async () => {
+        if (!botSetting) return;
         const res = await api.get(`/api/main-data/${botSetting.name}`);
         setData(res.data);
         setLoading(false);
         setTimeout(() => isFirstLoad.current = false, 1000);
     }
+
     useEffect(() => {
         setAuthLoading(true);
         const token = localStorage.getItem("access_token");
@@ -82,10 +87,14 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
         } else {
             setAuthLoading(false);
         }
-
-        if (token) {
+        if (token && botSetting) {
             fetchData();  
         }
+
+        return () => {
+            timersRef.current.forEach((t) => clearTimeout(t));
+            timersRef.current.clear();
+        };
     }, []);
 
     type ToastItem = ToastType & { id: number };
@@ -114,23 +123,25 @@ export function AppLayoutProvider({ children }: AppLayoutProviderProps) {
         return { status, message };
     };
 
-    // Очистка всех таймеров при размонтировании
-    useEffect(() => {
-        return () => {
-            timersRef.current.forEach((t) => clearTimeout(t));
-            timersRef.current.clear();
-        };
-    }, []);
+    const readManual = () => {
+        setIsManual(false);
+        localStorage.setItem("isManual", "false");
+    }
 
     useEffect(() => {
         if (isFirstLoad.current) return;
         setBotReboat(true);
     }, [data]);
 
+
     return (
         <AppContext.Provider value={{ theme, setTheme, user, handleLogin, callToast, logout,
             data, setData, loading, botRebut, setBotReboat, botSetting, authLoading, versionApp }}>
-            {children}
+            {
+                botSetting ? ( children ) : 
+                isManual ? <ManualPage readManual={readManual} /> : 
+                user ? <BotSelect setBotSetting={setBotSetting} user={user} /> : <Login />
+            }
             <ThemeSwitcher />
             <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2">
                 {toasts.map(t => (

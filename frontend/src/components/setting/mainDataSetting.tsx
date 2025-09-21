@@ -36,7 +36,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
     };
 
     return (
-        <div className="card bg-base-200 p-4 shadow">
+        <div className="card bg-base-100 p-4 shadow">
             <h3 className="text-lg font-bold mb-2">Основные</h3>
             <div className="grid grid-cols-1 gap-3">
                 <label className="block">
@@ -47,6 +47,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
                     placeholder="Имя бота"
                     value={settings.name}
                     onChange={(e) => updateTop("name", e.target.value)}
+                    disabled={dev}
                 />
                 </label>
 
@@ -58,6 +59,7 @@ export default function MainDataSetting({ settings, updateTop, updateConfig, dev
                     placeholder="123456:ABC-DEF..."
                     value={settings.token}
                     onChange={(e) => updateTop("token", e.target.value)}
+                    disabled={dev}
                 />
                 <div className="flex gap-2 mt-2">
                     <button

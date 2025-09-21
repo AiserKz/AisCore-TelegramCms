@@ -1,5 +1,5 @@
 from . import api_bp
-from flask import request, jsonify
+from flask import jsonify
 from app.core.database import db
 from app.models.media import Media
 from app.crud.upload import delete_file

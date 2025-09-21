@@ -1,18 +1,19 @@
 from flask import Blueprint, request, jsonify
+from datetime import datetime
+
 from app.core.database import db
-from app.models.Bot import Bot, BotPlugin
-from app.models.commands import Command
-import requests, datetime
-from app.core.config import BOT_CONTROL_URL
-from app.models.user import TelegramUser
 from app.crud.bot import reload_bot
+
+from app.models.Bot import Bot, BotPlugin
+from app.models.user import TelegramUser
+
 
 bot_bp = Blueprint('bot', __name__, url_prefix='/bot')
 
-@bot_bp.route("/init-bot", methods=["POST"])
-def init_bot():
+@bot_bp.route("/init-bot/<botname>", methods=["POST"])
+def init_bot(botname: str):
     try:
-        bot = db.session.query(Bot).filter_by(is_active=True).first()
+        bot = db.session.query(Bot).filter_by(name=botname).first()
         if not bot:
             return jsonify({"error": "Активный бот не найден"}), 403
 
@@ -21,7 +22,6 @@ def init_bot():
             "bot_token": bot.token,
             "config": bot.config
         }), 200
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
@@ -30,6 +30,8 @@ def init_bot():
 def get_plugins(botname: str):
     print(f"[API] Получаем плагины для бота {botname}")
     bot = db.session.query(Bot).filter(Bot.name == botname).first()
+    if not bot:
+        return jsonify({"error": "Бот не найден"}), 404
 
     plugins = BotPlugin.query.filter_by(bot_id=bot.id).all()
     pluginName = [{"name": p.plugin.name} for p in plugins if p.enabled]
@@ -45,8 +47,14 @@ def reload(botname):
 @bot_bp.route("/commands/<botname>", methods=["GET"])
 def get_commands(botname: str):
     print(f"[API] Получаем команды для бота {botname}")
-    commands = Command.query.filter_by(enabled=True).all()
-    return jsonify([{"name": c.name, "response": c.response_text} for c in commands]), 200
+    bot = db.session.query(Bot).filter(Bot.name == botname).first()
+    if not bot:
+        return jsonify({"error": "Бот не найден"}), 404
+    commands = bot.commands
+    if not commands:
+        return jsonify([]), 200
+    commands = [c for c in commands if c.enabled]
+    return jsonify([{"name": c.name, "response": c.response_text} for c in commands]), 200 # type: ignore
 
 
 @bot_bp.route("/log_user", methods=["POST"])
@@ -54,15 +62,22 @@ def log_user():
     data = request.get_json()
     user_id = data.get("user_id")
     chat_id = data.get("chat_id")
-    username = data.get("username")
-    first_name = data.get("first_name")
-    last_name = data.get("last_name")
-    language_code = data.get("language_code")
+    username = data.get("username", "None")
+    first_name = data.get("first_name", "None")
+    last_name = data.get("last_name", "None")
+    language_code = data.get("language_code", "None")
     is_bot = data.get("is_bot", False)
+    bot_name = data.get("bot_name")
+
+    if not user_id or not chat_id:
+        return jsonify({"error": "user_id и chat_id обязательны"}), 400
+
+    bot = Bot.query.filter_by(name=bot_name).first()
+    if not bot:
+        return jsonify({"error": "Бот не найден"}), 404
 
     user = TelegramUser.query.filter_by(user_id=user_id).first()
     if not user:
-        # создаём нового пользователя
         user = TelegramUser(
             user_id=user_id,
             chat_id=chat_id,
@@ -70,52 +85,25 @@ def log_user():
             first_name=first_name,
             last_name=last_name,
             language_code=language_code,
-            is_bot=is_bot
+            is_bot=is_bot,
         )
         db.session.add(user)
     else:
-        # обновляем данные существующего пользователя
         user.chat_id = chat_id
         if username:
             user.username = username
-        if last_name:
+        if first_name:
             user.first_name = first_name
         if last_name:
             user.last_name = last_name
         user.is_bot = is_bot
-        user.last_seen = datetime.datetime.utcnow()
+        user.last_seen = datetime.utcnow()
+
+    if bot not in user.bots:
+        user.bots.append(bot)
+
     db.session.commit()
     return jsonify({"status": "ok"})
-
-@bot_bp.route("/broadcast", methods=["POST"])
-def send_broadcast():
-    data = request.get_json()
-    text = data.get("message")
-    chat_ids = data.get("to", [])
-    images = data.get("images", [])
-    videos = data.get("video", [])
-    documents = data.get("docs", [])
-
-    if not (text or images or videos or documents):
-        return jsonify({
-            "status": "error",
-            "message": "Нужно указать текст сообщения или хотя бы один файл"
-        }), 400
-
-    # нормализуем пути у всех файлов
-    images = [img.replace("\\", "/") for img in images]
-    videos = [vid.replace("\\", "/") for vid in videos]
-    documents = [doc.replace("\\", "/") for doc in documents]
-
-    resp = requests.post(f"{BOT_CONTROL_URL}/broadcast", json={
-        "text": text, 
-        "chat_ids": chat_ids,
-        "images": images,
-        "videos": videos,
-        "documents": documents
-    })
-    return jsonify(resp.json()), resp.status_code
-
 
 
 @bot_bp.route("/stop/<botname>", methods=["POST"])

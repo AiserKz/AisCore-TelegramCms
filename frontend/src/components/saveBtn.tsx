@@ -10,7 +10,7 @@ export function SaveBtn({ absolute = true, opened = true }: { absolute?: boolean
 
 
     const handleSave = async () => {
-        if (loading) return;
+        if (loading || !botSetting) return;
         setBotReboat(false);
         setLoading(true);
         const res = await api.post(`/api/reload/${botSetting.name}`);

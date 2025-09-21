@@ -15,8 +15,11 @@ services:
       - STATIC_URL=http://localhost:5002
       - DEBUG=True
       - DOCKER=True
+      - FLASK_APP=main.py
+      - FLASK_RUN_HOST=0.0.0.0
     volumes:
       - ./backend/static:/app/static
+    command: ["/app/entrypoint.sh"]
 
   bot:
     build:

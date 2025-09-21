@@ -11,7 +11,7 @@ import api from "../script/apiFetch";
 export default function Users() {
     useTitle("Пользователи");
     const context = useAppContext();
-    const { data, loading } = context;
+    const { data, loading, callToast, botSetting } = context;
 
     const [selectedUser, setSelectedUser] = useState<TelegramUserType>();
     const handleSelectUser = (user: TelegramUserType) => {
@@ -19,28 +19,35 @@ export default function Users() {
     };
 
     const handleDelete = async (id: number) => {
+        if (!botSetting) return;
+        const data = {
+            user_id: id,
+            bot_name: botSetting.name
+        }
+
         try {
-            api.delete(`/api/users`, { data: { id } });
+            const res = await api.delete(`/api/users`, { data });
+            if (res.status !== 200) throw new Error();
             context.setData(prev => {
                 if (!prev) return prev;
                 return { ...prev, users: prev.users.filter(u => u.id !== id) } as any;
             });
-            context.callToast("success", "Пользователь удалён", 2500);
+            callToast("success", "Пользователь удалён", 2500);
         } catch (e) {
-            context.callToast("error", "Ошибка при удалении", 3000);
+            callToast("error", "Ошибка при удалении", 3000);
         }
     }
 
     return (
-        <div className="contaner mx-auto py-8">
+        <div className="container mx-auto py-8">
         <HeaderPageTitle title="Пользователи" />
-        <div className="mb-8">
+        <div className="mb-8 shadow-md p-4 rounded bg-base-100">
             <h2 className="text-2xl font-bold mb-2">Список пользователей</h2>
             <p className="text-base-content/70">
             Обзор зарегистрированных пользователей и их статуса.
             </p>
         </div>
-        <div className="overflow-x-auto rounded-lg shadow">
+        <div className="overflow-x-auto rounded shadow-md bg-base-100">
             <table className="table w-full gap-2">
             <thead>
                 <tr>

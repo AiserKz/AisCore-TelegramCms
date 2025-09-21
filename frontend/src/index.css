@@ -119,3 +119,11 @@ html, body {
 *::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #ff00ff, #a100ff);
 }
+
+
+.scroll-bar-none {
+  scrollbar-width: none;
+}
+.scroll-bar-none::-webkit-scrollbar {
+  display: none;
+}

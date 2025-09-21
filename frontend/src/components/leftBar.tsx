@@ -1,4 +1,4 @@
-import { PuzzlePieceIcon, ChevronDoubleLeftIcon, ArrowLeftEndOnRectangleIcon, UserIcon } from "@heroicons/react/24/outline";
+import { PuzzlePieceIcon, ArrowLeftEndOnRectangleIcon, UserIcon, ChevronDoubleRightIcon, HashtagIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppContext } from "../layout/AppLayout";
@@ -17,11 +17,6 @@ export default function LeftBar() {
     const [currentPage, setCurrentPage] = useState<number>(checkPage());
     useEffect(() => {
         setCurrentPage(checkPage());
-       
-        if (!botSetting.name && user && location.pathname !== "/settings") {
-            window.location.href = "/settings";
-        }
-    
     }, [location]);
 
     return (
@@ -40,7 +35,7 @@ export default function LeftBar() {
                 aria-label={opened ? "Свернуть" : "Развернуть"}
             >
                 
-                <ChevronDoubleLeftIcon className={`h-6 w-6 text-info transition-transform duration-600 ${ opened ? "rotate-180" : ""}` }/>
+                <ChevronDoubleRightIcon className={`h-6 w-6 text-info transition-transform duration-600 ${ opened ? "rotate-180" : ""}` }/>
               
             </button>
 
@@ -56,6 +51,10 @@ export default function LeftBar() {
                         <span className="text-3xl text-base-content"><span className="text-info animate-pulse">A</span>is<span className="text-info">C</span>ore</span>
                         <span className="text-sm text-base-content/60 font-sans m-2">{versionApp}</span>
                     </span>
+                </div>
+                <div className="p-2 flex border border-dashed rounded-md border-base-300 items-center justify-center">
+                    <HashtagIcon className="h-5 w-5 text-base-content/50" />
+                    <span className={`${opened ? "opacity-100" : "opacity-0 hidden"}`}>{botSetting?.name}</span>
                 </div>
                 <nav className="flex flex-col gap-2 relative">
                     {navItems.map((item) => (
@@ -88,7 +87,7 @@ export default function LeftBar() {
                 </div>
                 <button
                     onClick={logout}
-                    className={`flex items-center rounded-md px-2 py-2 hover:bg-base-200 transition-colors text-red-400 w-full justify-start `}
+                    className={`flex items-center rounded-md px-2 py-2 hover:bg-base-200 transition-colors text-red-400 w-full justify-start select-none`}
                 >
                     <logoutItem.icon className="h-6 w-6 shrink-0 cursor-pointer" />
                     <span

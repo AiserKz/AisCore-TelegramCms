@@ -9,11 +9,12 @@ class Plugin(db.Model):
     version = db.Column(db.String(20), nullable=True)
     author = db.Column(db.String(80), nullable=True)
     license = db.Column(db.String(20), nullable=True)
-    url = db.Column(db.String(255), nullable=True)
+    download_link = db.Column(db.String(255), nullable=True)
     poster = db.Column(db.String(255), nullable=True, default=None)
     price = db.Column(db.Float, nullable=True, default=None)
+    status = db.Column(db.Integer, nullable=False, default=0)
     
-    plugin_bots = db.relationship("BotPlugin", back_populates="plugin")
+    plugin_bots = db.relationship("BotPlugin", back_populates="plugin", cascade="all, delete-orphan")
     
     def to_dict(self):
         return {
@@ -24,7 +25,7 @@ class Plugin(db.Model):
             "version": self.version,
             "author": self.author,
             "license": self.license,
-            "url": self.url,
+            "download_link": self.download_link,
             "poster": self.poster,
             "price": self.price
         }

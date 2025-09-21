@@ -47,7 +47,7 @@ export default function Plagins() {
 	// const installedPlugins = getInstalledPlugins();
 
 	const handleToggle = async (plugin_id: number) => {
-		if (isFetching) return;
+		if (isFetching || !botSetting) return;
 		const bp = data?.bot?.plugins.find((p: any) => Number(p.plugin_id) === Number(plugin_id));
 		if (!bp) return;
 
@@ -171,7 +171,7 @@ export default function Plagins() {
 	return (
 		<div className="container mx-auto py-8">
 			<HeaderPageTitle title="Плагины" />
-			<div className="mb-8 relative">
+			<div className="mb-8 relative shadow-md p-4 rounded bg-base-100">
 				<h2 className="text-2xl font-bold mb-2">Список плагинов</h2>
 				<p className="text-base-content/70">
 					Управление и настройка доступных плагинов для вашего бота.
@@ -180,8 +180,8 @@ export default function Plagins() {
 		
 			</div>
 
-			<div className="overflow-x-auto md:overflow-x-hidden rounded-lg shadow mb-8">
-				<table className="table table-zebra w-full">
+			<div className="overflow-x-auto md:overflow-x-hidden rounded shadow-md mb-8 bg-base-100">
+				<table className="table w-full">
 					<thead>
 						<tr>
 							<th>Обложка</th>
@@ -200,7 +200,7 @@ export default function Plagins() {
 			</div>
 
             {/* Магазин плагинов */}
-            <div className="mb-8">
+            <div className="mb-8 shadow-md p-4 rounded bg-base-100">
 				<div className="flex items-center justify-between w-full">
 					<h3 className="text-xl font-bold mb-4">Библотека плагинов</h3>
 					<div className="flex items-center gap-2">

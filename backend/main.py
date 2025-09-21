@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import (
     JWTManager
@@ -8,14 +8,14 @@ from app.core.config import JWT_SECRET_KEY, init, DEBUG, JWT_ACCESS_TOKEN_EXPIRE
 from app.routes import api, bot, auth
 from app.models.user import User, TelegramUser
 from app.models.Bot import Bot, BotPlugin
-from app.models.commands import Command
+from app.models.commands import Commands
 from app.models.plugins import Plugin
 from app.models.media import Media
-
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 CORS(app)
-
+migrate = Migrate(app, db)
 
 if DOCKER:
     print("docker")

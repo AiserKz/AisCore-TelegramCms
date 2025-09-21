@@ -4,11 +4,31 @@ from .services.config import API_URL
 from .services.user_log import log_admin_info
 from types import ModuleType
 from collections import defaultdict
+from aiogram.filters import BaseFilter
 
-plugins_root: Router | None = None
-loaded_plugins: dict[str, ModuleType] = {}
-loaded_routers: dict[str, Router] = {}
+bots_state = {}
 
+
+def get_bot_state(name: str):
+    if name not in bots_state:
+        bots_state[name] = {
+            "dynamic_commands": {},
+            "plugins_root": None,
+            "loaded_plugins": {},
+            "loaded_routers": {}
+        }
+    return bots_state[name]
+
+class DynamicCommandFilter(BaseFilter):
+    def __init__(self, bot_name: str):
+        self.bot_name = bot_name
+    
+    async def __call__(self, message: types.Message) -> bool:
+        state = get_bot_state(self.bot_name)
+        if not message.text:
+            return False
+        cmd_name = message.text.lstrip("/")
+        return cmd_name in state["dynamic_commands"]
 
 # ================= Конфиг зависимостей =================
 
@@ -39,10 +59,10 @@ def check_dependencies(active_plugins: list[str]) -> dict:
             deps[pkg].append((name, ver or "*"))
     
     conflicts = {pkg: vers for pkg, vers in deps.items() if len(set(v for _, v in vers if v != "*")) > 1}
-    return conflicts, deps
+    return conflicts, deps # type: ignore
 
 
-async def install_missing_dependencies(deps: dict):
+async def install_missing_dependencies(deps: dict, name: str):
     """Устанавливаем зависимости"""
     for pkg, vers in deps.items():
         version = next((v for _, v in vers if v != "*"), None)
@@ -57,7 +77,7 @@ async def install_missing_dependencies(deps: dict):
                     subprocess.check_call([sys.executable, "-m", "pip", "install", package_spec])
                 except subprocess.CalledProcessError as e:
                     print(f"[BOT] ❌ Не удалось установить {package_spec}: {e}")
-                    await log_admin_info(f"Ошибка при установке зависимости {package_spec}: {e}")
+                    await log_admin_info(name, f"Ошибка при установке зависимости {package_spec}: {e}")
                     return
         else:
             print(f"[BOT] не удалось установить зависимость: {package_spec} {pkg}")
@@ -65,13 +85,13 @@ async def install_missing_dependencies(deps: dict):
 
 # ================== Создание роутера ==================
 
-def ensure_plugins_root(dp: Dispatcher) -> Router:
-    global plugins_root
-    if plugins_root is None:
-        plugins_root = Router(name="plugins_root")
-        dp.include_router(plugins_root)
-        print("[BOT] plugins_root подключён")
-    return plugins_root
+def ensure_plugins_root(dp: Dispatcher, name: str) -> Router:
+    state = get_bot_state(name)
+    if state["plugins_root"] is None:
+        state["plugins_root"] = Router(name=f"plugins_root_{name}")
+        dp.include_router(state["plugins_root"])
+        print(f"[BOT {name}] plugins_root подключён")
+    return state["plugins_root"]
 
 
 # ================== Динамические команды ==================
@@ -84,20 +104,21 @@ async def fetch_commands(name):
 
 async def load_dynamic_commands(name):
     """Обновляем словарь динамических команд"""
-    global dynamic_commands
+    state = get_bot_state(name)
     commands = await fetch_commands(name)
-    dynamic_commands = {cmd["name"].lstrip("/"): cmd["response"] for cmd in commands}
-    print(f"[BOT] Загружено {len(dynamic_commands)} динамических команд")
+    state["dynamic_commands"] = {cmd["name"].lstrip("/"): cmd["response"] for cmd in commands}
+    # dynamic_commands = {cmd["name"].lstrip("/"): cmd["response"] for cmd in commands}
+    print(f"[BOT {name}] Загружено {len(state['dynamic_commands'])} динамических команд")
     
 
-# Один глобальный хендлер для всех динамических команд
-async def dynamic_handler(message: types.Message):
+
+async def dynamic_handler(message: types.Message, name: str):
+    state = get_bot_state(name)
+    if not message.text:
+        return
     cmd_name = message.text.lstrip("/")
-    if cmd_name in dynamic_commands:
-        await message.reply(
-            dynamic_commands[cmd_name],
-            parse_mode="Markdown"
-        )
+    if cmd_name in state["dynamic_commands"]:
+        await message.reply(state["dynamic_commands"][cmd_name], parse_mode="Markdown")
         # await log_admin_info(f"Пользователь с id {message.from_user.id} имя {message.from_user.first_name or message.from_user.username} использовал команду {cmd_name}")
 
 # ================== Плагины бота ==================
@@ -106,8 +127,9 @@ async def fetch_enabled_plugins(name: str):
         async with s.get(f"{API_URL}/plugins/{name}") as resp:
             return await resp.json()
 
-async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
-    root = ensure_plugins_root(dp)
+async def load_bot_plugins(dp: Dispatcher, reload=False, name=''):
+    state = get_bot_state(name)
+    root = ensure_plugins_root(dp, name)
     plugins = await fetch_enabled_plugins(name)
     active_names = {p["name"] for p in plugins}
     
@@ -118,16 +140,26 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
             for pkg, vers in conflicts.items()
         )
         print(f"[BOT] Возникли конфликты зависимостей:\n{msg}. Могут быть проблемы в работе плагина бота. рекемендуем отключить один или несколько плагинов.")
-        await log_admin_info(f"Возникли конфликты зависимостей:\n{msg}. Могут быть проблемы в работе плагина бота. рекемендуем отключить один или несколько плагинов.")
-    await install_missing_dependencies(deps)
+        await log_admin_info(name, f"Возникли конфликты зависимостей:\n{msg}. Могут быть проблемы в работе плагина бота. рекемендуем отключить один или несколько плагинов.")
+    await install_missing_dependencies(deps, name)
+    
     # выгружаем/перезагружаем
     if reload:
-        for module_name, module in list(loaded_plugins.items()):
+        if state["plugins_root"]:
+            dp.sub_routers.remove(state["plugins_root"])
+            state["plugins_root"] = None
+            state["loaded_plugins"].clear()
+            state["loaded_routers"].clear()
+
+        # Создаём новый root
+        root = ensure_plugins_root(dp, name)
+        
+        for module_name, module in list(state["loaded_plugins"].items()):
             short = module_name.split(".")[-1]
 
             # отключён → удалить
             if short not in active_names:
-                router = loaded_routers.pop(module_name, None)
+                router = state["loaded_routers"].pop(module_name, None)
                 if router:
                     if router in root.sub_routers:
                         root.sub_routers.remove(router)
@@ -135,12 +167,12 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
                     router.message.handlers.clear()
                     router.callback_query.handlers.clear()
                     print(f"[BOT] Router плагина {short} удалён ❌")
-                loaded_plugins.pop(module_name, None)
+                state["loaded_plugins"].pop(module_name, None)
                 sys.modules.pop(module_name, None)
                 continue
 
             # активен → перезагрузить
-            router = loaded_routers.pop(module_name, None)
+            router = state["loaded_routers"].pop(module_name, None)
             if router and router in root.sub_routers:
                 root.sub_routers.remove(router)
                 router.message.handlers.clear()
@@ -148,41 +180,45 @@ async def load_bot_plugins(dp: Dispatcher, reload=False, name=None):
                 print(f"[BOT] Router плагина {short} отключён для перезагрузки ♻️")
 
             # гарантированно свежий импорт
-            sys.modules.pop(module_name, None)
+            unload_module(module_name)
             try:
                 new_module = importlib.import_module(module_name)
                 if hasattr(new_module, "build_router"):
                     new_router = new_module.build_router()
                     root.include_router(new_router)
-                    loaded_plugins[module_name] = new_module
-                    loaded_routers[module_name] = new_router
+                    state["loaded_plugins"][module_name] = new_module
+                    state["loaded_routers"][module_name] = new_router
                     print(f"[BOT] Плагин {short} перезагружен 🔄✅")
             except Exception as e:
                 print(f"[BOT] Ошибка при перезагрузке плагина {short}: {e}")
-                await log_admin_info(f"Ошибка при перезагрузке плагина {short}: {e}")
+                await log_admin_info(name, f"Ошибка при перезагрузке плагина {short}: {e}")
 
     # подключаем новые активные
     for p in plugins:
         module_name = f"bot.plugins.{p['name']}"
-        if module_name in loaded_plugins:
+        if module_name in state["loaded_plugins"]:
             continue
         try:
             module = importlib.import_module(module_name)
             if hasattr(module, "build_router"):
                 router = module.build_router()
                 root.include_router(router)
-                loaded_plugins[module_name] = module
-                loaded_routers[module_name] = router
+                state["loaded_plugins"][module_name] = module
+                state["loaded_routers"][module_name] = router
         except Exception as e:
             print(f"[BOT] Ошибка при подключении плагина {p['name']}: {e}")
-            await log_admin_info(f"Ошибка при подключении плагина {p['name']}: {e}")
+            await log_admin_info(name, f"Ошибка при подключении плагина {p['name']}: {e}")
             
-    print("[DBG] plugins_root:", [getattr(r, "name", "noname") for r in root.sub_routers], f"[BOT] Подключено {len(loaded_plugins)} плагинов")
+    print("[DBG] plugins_root:", [getattr(r, "name", "noname") for r in root.sub_routers], f"[BOT] Подключено {len(state['loaded_plugins'])} плагинов")
 
+def unload_module(module_name: str):
+    for m in list(sys.modules.keys()):
+        if m == module_name or m.startswith(module_name + "."):
+            sys.modules.pop(m, None)
         
         
 # ================== Перезагрузка всего ==================
-async def reload_bot_plugins(dp: Dispatcher, name=None):
+async def reload_bot_plugins(dp: Dispatcher, name:str = ''):
     """Перезагружаем плагины и динамические командыф"""
     print("[BOT] Перезагрузка плагинов и динамических команд... 🔄")
     await load_dynamic_commands(name)
@@ -191,6 +227,12 @@ async def reload_bot_plugins(dp: Dispatcher, name=None):
     
 
 # ================== Регистрация глобального хендлера ==================
-def register_global_handlers(dp: Dispatcher):
-    """Регистрируем один глобальный хендлер после всех плагинов"""
-    dp.message.register(dynamic_handler, lambda m: m.text.lstrip("/") in dynamic_commands)  # ловит только команды из dynamic_commands
+
+def register_global_handlers(dp: Dispatcher, name: str):
+    """Регистрируем глобальный хендлер после всех плагинов"""
+
+    async def wrapper(msg: types.Message, bot_name=name):
+        await dynamic_handler(msg, bot_name)
+
+    dp.message.register(wrapper, DynamicCommandFilter(name))
+    print(f"[BOT {name}] Глобальный хендлер динамических команд зарегистрирован ✅")

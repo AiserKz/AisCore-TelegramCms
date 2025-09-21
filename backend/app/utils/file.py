@@ -1,7 +1,6 @@
 import re, os, uuid
 
-
-def secure_filename(filename: str, dir_path: str = None):
+def secure_filename(filename: str, dir_path: str = ''):
     filename = re.sub(r'[<>:"/\\|?*]', '', filename).replace(" ", "_")
 
     if dir_path:

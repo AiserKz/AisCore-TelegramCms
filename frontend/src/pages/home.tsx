@@ -15,11 +15,11 @@ export default function Home() {
             <div className="container mx-auto py-8"> 
                 <HeaderPageTitle title="Главная" />
  
-                <div className="mb-8 ">
+                <div className="mb-8 shadow-md p-4 rounded bg-base-100">
                     <h2 className="text-2xl font-bold mb-2">Dashboard</h2>
                     <p className="text-base-content/70">Обзор производительности бота и активности пользователей.</p>
                 </div>
-                <div className="grid grid-cols-3 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-3 md:grid-cols-3 gap-6 mb-8 shadow-md p-4 rounded bg-base-100">
                     <div className="rgb-btn-purple bg-base-200 rounded-xl p-2">
                         <div className="stat-title">Пользователей</div>
                         <div className="stat-value flex items-center gap-2">
@@ -28,14 +28,14 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="rgb-btn-purple bg-base-200 rounded-xl p-2">
-                        <div className="stat-title">Активных команд</div>
+                        <div className="stat-title">Команд</div>
                         <div className="stat-value flex items-center gap-2">
                             {data?.total_count.commands || 0}
                             <CommandLineIcon className="h-6 w-6" />
                         </div>
                     </div>
                     <div className="rgb-btn-purple bg-base-200 rounded-xl p-2">
-                        <div className="stat-title">Плагинов включено</div>
+                        <div className="stat-title">Плагинов</div>
                         <div className="stat-value flex items-center gap-2">
                             {data?.total_count.plugins || 0}
                             <PuzzlePieceIcon className="h-6 w-6" />
@@ -43,7 +43,7 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div className="mb-8">
+                <div className="mb-8 shadow-md p-2 rounded bg-base-100">
                     <h3 className="text-xl font-bold mb-4">Активность команд</h3>
                     <div className="overflow-x-auto ">
                         <table className="table table-zebra w-full">
@@ -67,10 +67,10 @@ export default function Home() {
                     </div>
                 </div>
 
-                <div>
-                    <h3 className="text-xl font-bold mb-4">Плагины</h3>
+                <div className="mb-8 shadow-md p-2 rounded bg-base-100">
+                    <h3 className="text-xl font-bold mb-4 ">Плагины</h3>
                     <div className="overflow-x-auto">
-                        <table className="table table-zebra w-full">
+                        <table className="table w-full">
                             <thead>
                                 <tr>
                                     <th>Плагин</th>

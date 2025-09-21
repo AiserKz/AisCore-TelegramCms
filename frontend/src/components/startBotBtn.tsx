@@ -3,12 +3,16 @@ import { useEffect, useState } from "react";
 import api from "../script/apiFetch";
 
 export default function StartBotBtn({ isOpen }: { isOpen?: boolean }) {
-    const [BotName] = useState(localStorage.getItem("bot_settings_v1") ? JSON.parse(localStorage.getItem("bot_settings_v1") as string) : {});
+    const [BotName] = useState(localStorage.getItem("bot_settings_v1") ? JSON.parse(localStorage.getItem("bot_settings_v1") as string) : null);
     const [isRunning, setIsRunning] = useState<boolean>(true);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        api.post(`/bot/init-bot`).catch(() => setIsRunning(false))
+        if (BotName) {
+            api.get(`/api/check_active?bot_name=${BotName.name}`)
+                .then(res => setIsRunning(res.data.is_active))
+                .catch(() => setIsRunning(false));
+        }
     }, [BotName]);
 
     const handleStartBot = async () => {

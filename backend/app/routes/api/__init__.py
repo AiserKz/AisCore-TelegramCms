@@ -1,32 +1,38 @@
 from flask import Blueprint
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import request, jsonify
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-from . import plugins, commands, media, users
+from . import plugins, commands, media, users, bot
+# Core
 from app.core.database import db
-from app.routes.bot import reload_bot
-from flask import request, jsonify
-from app.models.commands import Command
+# Services / CRUD
+from app.crud.upload import download_file
+from app.crud.bot import start_bot, stop_bot, send_broadcast, reload_bot
+from app.crud.api import get_bot_data
+# Models
+from app.models.commands import Commands
 from app.models.Bot import Bot
-from app.models.user import TelegramUser
 from app.models.plugins import Plugin
 from app.models.media import Media
-from app.crud.upload import download_file
-from app.crud.bot import start_bot
-from flask_jwt_extended import jwt_required
+
+
 
 @api_bp.route("/main-data/<botname>", methods=["GET"])
 @jwt_required()
 def get_main_data(botname: str):
     plugins = db.session.query(Plugin).all()
     bot = db.session.query(Bot).filter(Bot.name == botname).first()
-    commands = db.session.query(Command).all()
-    users = db.session.query(TelegramUser).all()
+    if not bot:
+        return jsonify({"error": "Бот не найден"}), 404
+    commands = db.session.query(Commands).filter(Commands.bot_id == bot.id).all() # type: ignore
+    users = bot.users 
 
     total_count = {
-        "users": len(users),
+        "users": len(users), 
         "commands": len(commands),
-        "plugins": len(plugins)
+        "plugins": len(bot.bot_plugins) 
     }
 
     return jsonify({
@@ -52,7 +58,7 @@ def reload(botname: str):
 @jwt_required()
 def upload_file():
     file = request.files['file']
-    content_type = file.content_type
+    content_type = file.content_type or ''
     
     if content_type.startswith('image/'):
         types = 'images'
@@ -70,35 +76,22 @@ def upload_file():
 
     file_db = Media(
         file_name=file.filename,
-        file_size=filesize,
-        file_path=path
-    )
+        file_size=filesize, 
+        file_path=path 
+    ) 
     
     db.session.add(file_db)
     db.session.commit()
 
-    
     return jsonify({"url": url, "type": types}), 200
 
 
-@api_bp.route("/bot/config", methods=["POST"])
+@api_bp.route("/check_active", methods=["GET"])
 @jwt_required()
-def set_bot_config():
-    data = request.get_json()
-    if not data['name']:
-        return jsonify({"error": "Название бота не указано"}), 400
-    bot = db.session.query(Bot).filter(Bot.name == data['name']).first()
-    if not bot:
-        bot = Bot(name=data['name'], token=data.get('token', ''), config=data['config'])
-        db.session.add(bot)
-    else:
-        bot.token = data.get('token')
-        bot.config = data['config']
-        
-        
-    db.session.commit()
-    return jsonify({"message": "Конфигурация бота успешно обновлена"}), 200
-
+def get_active_bot():
+    bot_name = request.args.get('bot_name')
+    bot = db.session.query(Bot).filter(Bot.name == bot_name).first()
+    return jsonify({"is_active": bot.is_active if bot else False}), 200
 
 
 @api_bp.route("/startbot/<botname>", methods=["POST"])
@@ -107,12 +100,8 @@ def startBot(botname: str):
     bot = db.session.query(Bot).filter(Bot.name == botname).first()
     if not bot:
         return jsonify({"error": "Бот не найден"}), 200
-    
-    Bot.query.update({Bot.is_active: False})
-    db.session.commit()
     bot.is_active = True
     db.session.commit()
-    
     return start_bot(botname)
 
 @api_bp.route("/stopbot/<botname>", methods=["POST"])
@@ -123,4 +112,24 @@ def stopBot(botname: str):
         return jsonify({"error": "Бот не найден"}), 200
     bot.is_active = False
     db.session.commit()
+    stop_bot(botname)
     return jsonify({"status": "ok"}), 200
+
+
+@api_bp.route("/broadcast/<botname>", methods=["POST"])
+@jwt_required()
+def broadcast(botname: str):
+    data = request.get_json()
+    return send_broadcast(data, botname)
+
+
+@api_bp.route("/check_token", methods=["POST"])
+@jwt_required()
+def check_token():
+    data = request.get_json()
+    token = data.get('token')
+    if not token:
+        return jsonify({"status": "error", "message": "Токен не указан"}), 400
+    url = f"https://api.telegram.org/bot{token}/getMe"
+    
+    return get_bot_data(url)

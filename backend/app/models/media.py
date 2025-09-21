@@ -11,6 +11,11 @@ class Media(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    def __init__(self, file_name, file_size, file_path):
+        self.file_name = file_name
+        self.file_size = file_size
+        self.file_path = file_path
+    
     def to_dict(self):
         return {
             "id": self.id,

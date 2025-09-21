@@ -12,7 +12,7 @@ import useTitle from "../script/useTitle";
 export default function Commands() {
     useTitle("Команды");
     const context = useAppContext();
-    const { callToast, data, setData, loading } = context;
+    const { callToast, data, setData, loading, botSetting } = context;
     const [newCommand, setNewCommand] = useState<NewCommandType | undefined>({ name: "", description: "", response_text: "" });
 
     const [editingCommand, setEditingCommand] = useState<CommandType | null>(null);
@@ -21,11 +21,16 @@ export default function Commands() {
     const [isFetching, setIsFetching] = useState<boolean>(false);
 
     const handleCreateCommand = async () => {
-        if (!newCommand) return;
+        if (!newCommand || !botSetting) return;
         if (newCommand.name.trim() === "" || newCommand.description.trim() === "" || newCommand.response_text.trim() === "") {
             callToast("error", "Поля не должны быть пустыми", 5000);
             return;
         };
+        if (data?.commands.find(c => c.name.toLowerCase() === newCommand.name.trim().toLowerCase())) {
+            callToast("error", "Команда с таким именем уже существует", 5000);
+            return;
+        }
+
         const payload = {
             name: newCommand.name.trim(),
             description: newCommand.description.trim(),
@@ -34,7 +39,7 @@ export default function Commands() {
             created_at: new Date().toISOString(),
         };
         try {
-            const res = await api.post("/api/commands", payload);
+            const res = await api.post(`/api/commands/${botSetting.name}`, payload);
             if (res.status === 201 || res.status === 200) {
                 const created: CommandType = res.data || { ...(payload as any), id: Date.now() };
                 setData(prev =>
@@ -103,7 +108,7 @@ export default function Commands() {
         <div className="mx-auto py-8">
             <HeaderPageTitle title="Управление командами" description="Добавляйте и редактируйте команды Telegram-бота." />
 
-            <div className="card bg-base-100 shadow mb-8 mt-12">
+            <div className="card bg-base-100 shadow-md mb-8 mt-12">
              <span className="text-xl font-bold absolute -top-5 pl-3 ">Добавить команду</span>
                 <div className={`card-body overflow-hidden transition-all relative duration-1000  ${newCommand?.name ? "max-h-screen" : "max-h-20"}`}>
                     <div className="flex flex-col gap-4">
@@ -152,7 +157,7 @@ export default function Commands() {
                 </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto shadow-md rounded bg-base-100">
                 <table className="table table-zebra w-full">
                     <thead>
                         <tr>
@@ -185,6 +190,7 @@ export default function Commands() {
                     setData={setData}
                     deleteCommand={deleteCommand}
                     isDeleting={isDeleting}
+                    data={data}
                 />
             )}
         </div>

@@ -1,4 +1,4 @@
-import tempfile, zipfile, requests, io, aiohttp, time, asyncio
+import tempfile, zipfile, requests, io, aiohttp, time, asyncio, os
 from aiohttp import web
 from aiogram.types import InputMediaPhoto, InputMediaVideo
 from .plugin_loader import reload_bot_plugins
@@ -11,18 +11,33 @@ PLUGIN_DIR = '/bot/bot/plugins' if DOCKER else 'bot/plugins'
 
 
 # ================== HTTP API для админки ==================
+
 async def handle_reload(request):
-    from .main import dp
+    from .main import bots
     name = request.match_info.get("bot_name")
+    if not name:
+        return web.json_response({"status": "error", "message": "Название бота не указано"}, status=400)
+
+    bot_entry = bots.get(name)
+    if not bot_entry:
+        return web.json_response({"status": "error", "message": f"Бот {name} не найден или не запущен"}, status=404)
+
+    dp = bot_entry["dp"]
+
     print(f"[API] Перезагрузка плагинов и команд для бота {name}")
-    if not name: return print("[API] Название бота не указано")
     await reload_bot_plugins(dp, name=name)
-    return web.json_response({"status": "ok", "message": "♻️ Плагины и команды перезагружены"})
+
+    return web.json_response({"status": "ok", "message": f"♻️ Плагины и команды для {name} перезагружены"})
 
 
 async def handler_broadcast(request):
-    from .main import bot
+    from .main import bots
+    bot_name = request.match_info.get("bot_name")
+    
+    bot = bots[bot_name]["bot"]
+    
     data = await request.json()
+    
     text = data.get("text")
     chat_ids = data.get("chat_ids", [])
     images = data.get("images", [])
@@ -129,6 +144,14 @@ async def handle_dowload(request):
                 content = await resp.read()
                 
         with zipfile.ZipFile(io.BytesIO(content)) as zip_ref:
+            top_dir = {name.split("/")[0] for name in zip_ref.namelist() if "/" in name}
+            for d in top_dir:
+                target_path = os.path.join(PLUGIN_DIR, d)
+                if os.path.exists(target_path):
+                    print(f"[API] Плагин {d} уже существует, установка отменена ❌")
+                    return web.json_response({"status": "error", "message": f"Плагин '{d}' уже существует, установка отменена ❌"},
+                status=400
+            )
             zip_ref.extractall(PLUGIN_DIR)
         
         return web.json_response({"status": "ok", "message": "Плагин установлен и перезагружен ✅"})
@@ -138,10 +161,10 @@ async def handle_dowload(request):
     except Exception as e:
         return web.json_response({"status": "error", "message": str(e)}, status=500)
 
-def bot_init(retries=3, delay=3):
+def bot_init(bot_name:str, retries=3, delay=3):
     for i in range(retries):
         try:
-            res = requests.post(API_URL + "/init-bot", timeout=5)
+            res = requests.post(f'{API_URL}/init-bot/{bot_name}', timeout=5)
             res.raise_for_status()
             data = res.json()
             if not data or "bot_token" not in data:
@@ -155,20 +178,31 @@ def bot_init(retries=3, delay=3):
     return None
 
 async def handle_start(request: web.Request):
-    from .main import start_bot, is_Run
-    bot_name = request.match_info.get("bot_name")
-    print(f"[WEB] Запрос на запуск бота: {bot_name}")
-    if is_Run:
+    from .main import start_bot, bots
+    bot_name = request.match_info.get("bot_name", "")
+    data = bot_init(bot_name)
+    if not data:
+        return web.json_response({"status": "error", "message": "Нет данных"})
+    
+    if bot_name in bots:
         return web.json_response({"status": "error", "message": "Бот уже запущен"})
 
-    asyncio.create_task(start_bot()) 
+    await start_bot(bot_name, data["bot_token"], data["config"])
     return web.json_response({"status": "ok", "message": f"Бот {bot_name} запускается..."})
+
+async def handle_stop(request: web.Request):
+    from .main import stop_bot
+    bot_name = request.match_info.get("bot_name", "")
+    if await stop_bot(bot_name):
+        return web.json_response({"status": "ok", "message": f"Бот {bot_name} остановлен"})
+    return web.json_response({"status": "error", "message": "Бот не найден"})
 
 def setup_web_server():
     app = web.Application()
     app.router.add_post("/start/{bot_name}", handle_start)
+    app.router.add_post("/stop/{bot_name}", handle_stop)
     app.router.add_post("/reload/{bot_name}", handle_reload)
-    app.router.add_post("/broadcast", handler_broadcast)
+    app.router.add_post("/broadcast/{bot_name}", handler_broadcast)
     app.router.add_get("/plugins/config/{plugin_name}", handle_get_plugin)
     app.router.add_put("/plugins/config/{plugin_name}", handle_set_plugin)
     app.router.add_post("/plugins/download", handle_dowload)

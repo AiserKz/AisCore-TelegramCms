@@ -10,10 +10,11 @@ interface EditingCommandModalProps {
     callToast: (status: "info" | "success" | "error", message: string, duration?: number) => void;
     setData: React.Dispatch<React.SetStateAction<MainDataType | undefined>>;
     deleteCommand: (id: number) => void;
-    isDeleting: boolean
+    isDeleting: boolean;
+    data?: MainDataType;
 }
 
-export default function EditingCommandModal({ editingCommand, setEditingCommand, callToast, deleteCommand, setData, isDeleting }: EditingCommandModalProps ) {
+export default function EditingCommandModal({ editingCommand, setEditingCommand, callToast, deleteCommand, setData, isDeleting, data }: EditingCommandModalProps ) {
 
 
     const [isSavingEdit, setIsSavingEdit] = useState<boolean>(false);
@@ -76,6 +77,15 @@ export default function EditingCommandModal({ editingCommand, setEditingCommand,
             callToast("error", "Поля не должны быть пустыми", 5000);
             return;
         }
+        const duplicate = data?.commands.find(
+            c => c.name.toLowerCase() === editingCommand.name.trim().toLowerCase() 
+            && c.id !== editingCommand.id
+        )
+        if (duplicate) {
+            callToast("error", "Команда с таким именем уже существует", 5000);
+            return;
+        }
+
         setIsSavingEdit(true);
         try {
             // отправляем editingCommand целико

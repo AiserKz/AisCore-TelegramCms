@@ -12,6 +12,7 @@ export interface ToastType {
 export interface UserType {
     id: number;
     username: string;
+    level: number;
 }
 
 export interface PluginType {
@@ -22,7 +23,7 @@ export interface PluginType {
     version: string;
     author: string;
     license: string;
-    url: string;
+    download_link: string;
     poster?: string;
     price?: number;
 }
@@ -93,9 +94,29 @@ export interface SettingsState {
 };
 
 export interface BotSetting {
+  id: number;
   name: string;
   token: string;
   config: SettingsState;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
+  password?: string;
+}
+
+export interface BotLightSetting {
+    id: number;
+    name: string;
+    token: string;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+}
+export interface NewBotSetting {
+    name: string;
+    token?: string;
+    config?: SettingsState;
+    password?: string;
 }
 
 export interface MediaType {
