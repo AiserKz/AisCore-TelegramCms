@@ -300,7 +300,7 @@ _Больше скриншотов в папке `docs/`._
 Если нужно связаться:
 
 - Email: aibekmiribekov0217@gmail.com
-- Telegram: https://t.me/aisblackm
+- Telegram: https://t.me/aisblack
 
 Буду рад фидбеку, репортам и pull‑request'ам вместе сделаем продукт лучше.
 
